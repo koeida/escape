@@ -42,8 +42,11 @@ def draw_camera(screen, camera, ts, m, sx, sy):
     
     for y in range(num_tiles_high + 1):
         for x in range(num_tiles_wide + 1):
-            cur_tile = m[y + start_my][x + start_mx]
-            draw_tile(result, ts, cur_tile, x * ts.tile_width, y * ts.tile_height)
+            yindex = y + start_my
+            xindex = x + start_mx
+            if yindex >= 0 and yindex < len(m) and xindex >= 0 and xindex < len(m[0]): 
+                cur_tile = m[yindex][xindex]
+                draw_tile(result, ts, cur_tile, x * ts.tile_width, y * ts.tile_height)
     
     
     screen.blit(result, (sx, sy), (xgap, ygap, camera.width, camera.height))
