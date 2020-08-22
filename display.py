@@ -2,8 +2,16 @@ import pygame
 from collections import namedtuple
 from gamemap import get_map_coords
 
-Tileset = namedtuple("Tileset", "image tile_width tile_height tiles_per_line rows")
+Tileset = namedtuple("Tileset", "image tile_width tile_height tiles_per_line rows data")
 Camera = namedtuple("Camera", "target width height")
+
+class TileInfo:
+    pass
+    
+def tile(walkable=True):
+    results = TileInfo()
+    results.walkable = walkable
+    return results
 
 def load_tileset(f, tile_width, tile_height):
     tileset_img = pygame.image.load(f)
@@ -11,8 +19,11 @@ def load_tileset(f, tile_width, tile_height):
     img_height = tileset_img.get_rect().height    
     tiles_per_line = int(img_width / tile_width)
     rows = int(img_height / tile_height)   
+    
+    data = {98: tile(False)} 
+    
    
-    return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows)
+    return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows, data)
 
 def draw_tile(screen, tileset, tile_number, x, y):
     tile_y = int(tile_number / tileset.tiles_per_line)
@@ -25,13 +36,25 @@ def draw_tile(screen, tileset, tile_number, x, y):
     screen.blit(tileset.image, (x,y), (tix, tiy, tileset.tile_width, tileset.tile_height))
         
     
+def draw_cam_sprites(screen, camera, sprites, c_left, c_top):
+    for s in sprites:
+        if s.x > c_left and s.x < c_left + camera.width:
+            if s.y > c_top and s.y < c_top + camera.height:
+                screen.blit(s.img, (s.x - c_left, s.y - c_top))
     
 
-def draw_camera(screen, camera, ts, m, sx, sy):
-    c_left = camera.target.x - int(camera.width / 2)
-    c_top = camera.target.y - int(camera.height / 2)
+def draw_camera(screen, camera, ts, m, sx, sy, sprites):
+    tgtx = camera.target.x
+    tgty = camera.target.y
+    if camera.target.x <= int(camera.width / 2):
+        tgtx = int(camera.width / 2)
+    if camera.target.y <= int(camera.width / 2):
+        tgty = int(camera.width / 2)
+    c_left = tgtx - int(camera.width / 2)
+    c_top = tgty - int(camera.height / 2)
+        
     xgap = c_left % ts.tile_width
-    ygap = c_top % ts.tile_height      
+    ygap = c_top % ts.tile_height
     
     start_mx, start_my = get_map_coords(c_left, c_top, ts.tile_width, ts.tile_height)
     
@@ -50,4 +73,5 @@ def draw_camera(screen, camera, ts, m, sx, sy):
     
     
     screen.blit(result, (sx, sy), (xgap, ygap, camera.width, camera.height))
+    draw_cam_sprites(screen, camera, sprites, c_left, c_top)
     

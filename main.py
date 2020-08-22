@@ -3,14 +3,11 @@ import traceback
 import display
 from random import randint
 import creatures
-
-class Sprite:
-    pass
-     
+import timers
     
-def get_input(player, m):
+def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
-    speed = 1
+    speed = 10
     dx = 0
     dy = 0
     
@@ -23,7 +20,7 @@ def get_input(player, m):
     if keys[pygame.K_s]:
         dy = speed
     
-    creatures.attempt_walk(player, dx, dy, m)
+    creatures.attempt_walk(player, dx, dy, m, ts)
 
 def main(screen):   
     clock = pygame.time.Clock()
@@ -31,24 +28,35 @@ def main(screen):
     
     ts = display.load_tileset("cavetiles_01.png", 32, 32)    
     
-    player = Sprite()
+    player = creatures.Sprite()
     player.x = 400
-    player.y = 400
+    player.y = 200
+    player.img = pygame.Surface((10,10))
+    player.img.fill((255,0,0),(3,3,3,3))
     
     game_map = [[0 for x in range(100)] for y in range(100)]
     for x in range(1000):
         game_map[randint(0,99)][randint(0,99)] = randint(0,7)
+    
+    for x in range(100):
+        game_map[10][x] = 16 * 6 + 2
+        
+    sprites = [player]
+
+    timers.add_timer(3, lambda: player.img.fill((0,0,255), (3,3,3,3)))
+    
     cam = display.Camera(player, 32*9, 32*9)
     
     while(running):
         clock.tick(60)
+        timers.update_timers()
         
         screen.fill((0,0,0))        
        
-        display.draw_camera(screen, cam, ts, game_map, 32, 32)
+        display.draw_camera(screen, cam, ts, game_map, 32, 32, sprites)
         screen.fill((255,0,0), (cam.width + 32, 0, 1, cam.height))
         
-        get_input(player, game_map)
+        get_input(player, game_map, ts)
             
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
