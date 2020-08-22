@@ -5,6 +5,7 @@ from random import randint
 import creatures
 import timers
 import world
+import collisions
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
@@ -12,16 +13,29 @@ def get_input(player, m, ts):
     dx = 0
     dy = 0
     
-    if keys[pygame.K_d]:
-        dx = speed
-    if keys[pygame.K_w]:
-        dy = -speed
-    if keys[pygame.K_a]:
-        dx = -speed
-    if keys[pygame.K_s]:
-        dy = speed
+    w = keys[pygame.K_w]
+    s = keys[pygame.K_s]
+    d = keys[pygame.K_d]
+    a = keys[pygame.K_a]
     
-    creatures.attempt_walk(player, dx, dy, m, ts)
+    if w:
+        player.vy = -speed
+    if s:
+        player.vy = speed
+    if d:
+        player.vx = speed
+    if a:
+        player.vx = -speed
+        
+    if not s and not w:
+        player.vy = 0
+    if not a and not d:
+        player.vx = 0
+    
+        
+    
+    
+    
 
 def main(screen):   
     clock = pygame.time.Clock()
@@ -31,8 +45,8 @@ def main(screen):
     ts = display.load_tileset("cavetiles_01.png", 32, 32)    
     
     panim = {"walking": ("test_monk", [0], 40)}
-    player = creatures.Sprite(400, 400, panim)
-    enemy = creatures.Sprite(200, 200, panim)
+    player = creatures.Sprite(400, 400, "player", panim)
+    enemy = creatures.Sprite(600, 600, "monk", panim)
     
     game_map = [[0 for x in range(100)] for y in range(100)]
     for x in range(1000):
@@ -54,12 +68,13 @@ def main(screen):
         clock.tick(60)
         timers.update_timers()
         
-        screen.fill((0,0,0))        
-       
-        display.draw_camera(screen, cam, ts, game_map, 32, 32, sprites)
-        screen.fill((255,0,0), (cam.width + 32, 0, 1, cam.height))
         
         get_input(player, game_map, ts)
+        
+        for s in sprites:
+            creatures.attempt_walk(s, game_map, ts)
+        
+        collisions.check_collisions(sprites)
             
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -68,7 +83,10 @@ def main(screen):
                 if event.key == pygame.K_SPACE:
                     running = False
                 
-                
+        screen.fill((0,0,0))        
+       
+        display.draw_camera(screen, cam, ts, game_map, 32, 32, sprites)
+        screen.fill((255,0,0), (cam.width + 32, 0, 1, cam.height))        
         pygame.display.flip()
 
         
