@@ -31,7 +31,8 @@ def main(screen):
     ts = display.load_tileset("cavetiles_01.png", 32, 32)    
     
     panim = {"walking": ("test_monk", [0], 40)}
-    player = creatures.Sprite(400,400,panim)
+    player = creatures.Sprite(400, 400, panim)
+    enemy = creatures.Sprite(200, 200, panim)
     
     game_map = [[0 for x in range(100)] for y in range(100)]
     for x in range(1000):
@@ -40,12 +41,12 @@ def main(screen):
     for x in range(100):
         game_map[10][x] = 16 * 6 + 2
         
-    sprites = [player]
-
+    sprites = [player, enemy]
     
     
     cam = display.Camera(player, 32*9, 32*9)
     
+    # Timer Example
     timers.add_timer(5, lambda: cam.set_shake(5))
     timers.add_timer(10, lambda: cam.set_shake(0))
     
