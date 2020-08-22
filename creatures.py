@@ -1,8 +1,20 @@
 from gamemap import get_map_coords, onscreen, walkable
 import world
 
+class Animation:
+    def __init__(self, name, anim_db):
+        self.name = name
+        self.anim_db = anim_db
+
 class Sprite:
-    pass
+    def __init__(self, x, y, animations=None, current_animation="walking"):
+        self.x = x
+        self.y = y
+        self.animations = animations
+        self.current_animation = current_animation
+        self.current_frame = 0
+        self.anim_timer = animations[current_animation][2]
+        
 
 def attempt_walk(s, dx, dy, m, ts):
     new_x = s.x + dx

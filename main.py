@@ -4,6 +4,7 @@ import display
 from random import randint
 import creatures
 import timers
+import world
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
@@ -26,13 +27,11 @@ def main(screen):
     clock = pygame.time.Clock()
     running = True
     
+    world.load_assets(world.image_db)
     ts = display.load_tileset("cavetiles_01.png", 32, 32)    
     
-    player = creatures.Sprite()
-    player.x = 400
-    player.y = 200
-    player.img = pygame.Surface((10,10))
-    player.img.fill((255,0,0),(3,3,3,3))
+    panim = {"walking": ("test_monk", [0], 40)}
+    player = creatures.Sprite(400,400,panim)
     
     game_map = [[0 for x in range(100)] for y in range(100)]
     for x in range(1000):
@@ -43,9 +42,12 @@ def main(screen):
         
     sprites = [player]
 
-    timers.add_timer(3, lambda: player.img.fill((0,0,255), (3,3,3,3)))
+    
     
     cam = display.Camera(player, 32*9, 32*9)
+    
+    timers.add_timer(5, lambda: cam.set_shake(5))
+    timers.add_timer(10, lambda: cam.set_shake(0))
     
     while(running):
         clock.tick(60)
