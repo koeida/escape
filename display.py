@@ -66,23 +66,11 @@ def render_cam_sprites(screen, cam, sprites, ts, m):
     return screen
         
 def get_camera_game_coords(camera, m, ts):
-    tgtx = camera.target.x
-    tgty = camera.target.y
+    tgtx = camera.target.x + (camera.target.get_rect().width / 2)
+    tgty = camera.target.y + (camera.target.get_rect().height / 2)
    
     centerx = int(camera.width / 2)
     centery = int(camera.height / 2)
-    
-    maxx = len(m[0]) * ts.tile_width - centerx
-    maxy = len(m) * ts.tile_width - centery
-    
-    if tgtx <= centerx:
-        tgtx = centerx        
-    if tgty <= centery:
-        tgty = centery
-    if tgtx >= maxx:
-        tgtx = maxx
-    if tgty >= maxy:
-        tgty = maxy
     
     c_left = tgtx - centerx + randint(0, camera.shake)
     c_top = tgty - centery + randint(0, camera.shake)
@@ -128,5 +116,25 @@ def draw_interface(screen, cam, ts, game_map, sprites):
     # TASK: Draw inventory? 
     # TASK: Brainstorm other things that should go on the screen
     
-   
+def calc_screen_coords(game_coords, camrect, cam, m, ts):
+    gx,gy = game_coords
+    camx, camy, camw, camh = camrect
+    cam_left_game, cam_top_game = get_camera_game_coords(cam, m, ts)
+    gx_oncam = cam_left_game - gx
+    gy_oncam = cam_top_game - gy
+    #meh
+    
+    
+def render_shield(player_sx, playersy, mouse_x, mouse_y, swidth):
+    cam_size = 32*9
+    cam_pos = 50
+    rel_x, rel_y = mouse_x - cam_pos - cam_size, mouse_y - cam_pos - cam_size
+    #angle = math.atan2(rel_y, rel_x)
+    angle = (180 / math.pi) * math.atan2(rel_y, rel_x)
+    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    sangle = 90 / 2
+    pygame.gfxdraw.arc(shield_surface, smiddle, smiddle, 45, 
+                       int(angle - sangle), int(angle + sangle),
+                       (255, 255, 255))  
+    return shield_surface
     
