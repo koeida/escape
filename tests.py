@@ -11,5 +11,13 @@ def test_get_camera_game_coords():
     assert(left_x == 82)
     assert(top_x == 82)
     
+def test_get_map_coords():
+    mx, my = get_map_coords(16, 0, 32, 32)
+    assert(mx == 0)
+    assert(my == 0)
+    
+    
+    
     
 test_get_camera_game_coords()
+test_get_map_coords()
