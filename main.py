@@ -7,6 +7,7 @@ import creatures
 import timers
 import world
 import collisions
+import math
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
@@ -63,7 +64,7 @@ def main(screen):
     
     swidth = player.get_rect().width + 35
     smiddle = int(swidth / 2)
-    
+    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     
     shield= creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
     
