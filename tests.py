@@ -1,6 +1,7 @@
 import pygame
 import creatures
 import display
+import gamemap
 
 def test_get_camera_game_coords():
     test_sprite_rect = pygame.Surface((64,64))
@@ -12,9 +13,12 @@ def test_get_camera_game_coords():
     assert(top_x == 82)
     
 def test_get_map_coords():
-    mx, my = get_map_coords(16, 0, 32, 32)
-    assert(mx == 0)
-    assert(my == 0)
+    assert(gamemap.get_map_coords(16, 0, 32, 32) == (0,0))
+    assert(gamemap.get_map_coords(32, 0, 32, 32) == (1,0))
+    assert(gamemap.get_map_coords(32, 32, 32, 32) == (1,1))
+    assert(gamemap.get_map_coords(32, 33, 32, 32) == (1,1))
+    assert(gamemap.get_map_coords(-1, -1, 32, 32) == (-1,-1))
+    assert(gamemap.get_map_coords(-1, 0, 32, 32) == (-1,0))
     
     
     

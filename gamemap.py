@@ -1,8 +1,13 @@
 from random import randint
 
 def get_map_coords(px, py, tile_width, tile_height):
-    mx = int(px / tile_width)
-    my = int(py / tile_height)
+    pxmod = pymod = 0
+    if px < 0:
+        pxmod = -1
+    if py < 0:
+        pymod = -1
+    mx = int(px / tile_width) + pxmod
+    my = int(py / tile_height) + pymod
     return (mx, my)    
 
 def onscreen(mx,my,m):
