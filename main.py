@@ -96,9 +96,12 @@ def main(screen):
         cam_pos = 50
         rel_x, rel_y = mouse_x - cam_pos - cam_size, mouse_y - cam_pos - cam_size
         #angle = math.atan2(rel_y, rel_x)
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)
+        angle = (180 / math.pi) * math.atan2(rel_y, rel_x)
         shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-        pygame.gfxdraw.arc(shield_surface, smiddle, smiddle, 45, 220, 325, (255, 255, 255))  
+        sangle = 90 / 2
+        pygame.gfxdraw.arc(shield_surface, smiddle, smiddle, 45, 
+                           int(angle - sangle), int(angle + sangle),
+                           (255, 255, 255))  
         shield.simple_img = shield_surface
         
         collisions.check_collisions(sprites)
