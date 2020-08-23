@@ -73,7 +73,8 @@ def main(screen):
     sprites = [player, enemy, shield]
     
     
-    cam = display.Camera(player, 32*9, 32*9)
+    cam_size = 32 * 15 
+    cam = display.Camera(player, cam_size, cam_size)
     
     # Timer Example
     timers.add_timer(5, lambda: cam.set_shake(5))
