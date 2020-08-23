@@ -57,8 +57,8 @@ def render_cam_sprites(screen, cam, sprites, ts, m):
         srect = s.get_rect()
         sw = srect.width
         sh = srect.height
-        on_x = s.x >= c_left and s.x < c_left + cam.width - sw
-        on_y = s.y >= c_top and s.y < c_top + cam.height - sh
+        on_x = s.x >= c_left - sw and s.x < c_left + cam.width
+        on_y = s.y >= c_top - sh and s.y < c_top + cam.height
         if on_x and on_y:
             img = get_sprite_cur_img(s)
             #img_rect = img.get_rect()
