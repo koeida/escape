@@ -94,7 +94,7 @@ def main(screen):
         
         mouse_x, mouse_y = pygame.mouse.get_pos()
         get_input(player, game_map, ts)       
-        print(player.x)
+        
         
         for s in sprites:
             if s.kind != "wall":
