@@ -11,7 +11,7 @@ import math
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
-    speed = 10
+    speed = 4
     dx = 0
     dy = 0
     
@@ -66,15 +66,23 @@ def main(screen):
     smiddle = int(swidth / 2)
     shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     
-    shield= creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
-    
+    shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
     game_map = gen_test_map()
         
     sprites = [player, enemy, shield]
     
+    for y in range(len(game_map)):
+        for x in range(len(game_map[0])):
+            if game_map[y][x] == 16 * 6 + 2:
+                sprites.append(creatures.Sprite(x * 32, y * 32, "wall", simple_img=border_surf))
+                
+    
     
     cam_size = 32 * 15 
-    cam = display.Camera(player, cam_size, cam_size)
+    cam = display.Camera(player, 32, 32, cam_size, cam_size)
+    
     
     # Timer Example
     timers.add_timer(5, lambda: cam.set_shake(5))
@@ -86,10 +94,11 @@ def main(screen):
         
         mouse_x, mouse_y = pygame.mouse.get_pos()
         get_input(player, game_map, ts)       
-        
+        print(player.x)
         
         for s in sprites:
-            creatures.attempt_walk(s, game_map, ts)
+            if s.kind != "wall":
+                creatures.attempt_walk(s, game_map, ts)
             
         shield.x = player.x - 17
         shield.y = player.y - 10

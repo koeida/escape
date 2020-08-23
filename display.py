@@ -8,11 +8,13 @@ Tileset = namedtuple("Tileset", "image tile_width tile_height tiles_per_line row
 Camera = namedtuple("Camera", "target width height")
 
 class Camera:
-    def __init__(self, target, width, height):
+    def __init__(self, target, x, y, width, height):
         self.target = target
         self.width = width
         self.height = height
         self.shake = 0
+        self.x = x
+        self.y = y
     def set_shake(self, x):
         self.shake = x
 
@@ -90,7 +92,7 @@ def render_camera_tiles(camera, ts, m):
         for x in range(num_tiles_wide + 1):
             yindex = y + start_my
             xindex = x + start_mx
-            if yindex >= 0 and yindex < len(m) and xindex >= 0 and xindex < len(m[0]): 
+            if yindex > 0 and yindex < len(m) and xindex > 0 and xindex < len(m[0]): 
                 cur_tile = m[yindex][xindex]
                 draw_tile(result, ts, cur_tile, x * ts.tile_width, y * ts.tile_height)
     
@@ -107,10 +109,8 @@ def render_camera(camera, ts, m, sprites):
     
 def draw_interface(screen, cam, ts, game_map, sprites):
     # Draw the camera
-    CAMX = 50
-    CAMY = 50
     cam_surface = render_camera(cam, ts, game_map, sprites)
-    screen.blit(cam_surface, (CAMX, CAMY))
+    screen.blit(cam_surface, (cam.x, cam.y))
     # TASK: Maybe draw a pretty border around the camera, I dunno
     # TASK: Draw player stats
     # TASK: Draw inventory? 
