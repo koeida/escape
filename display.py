@@ -60,11 +60,9 @@ def render_cam_sprites(screen, cam, sprites, ts, m):
         on_x = s.x >= c_left - sw and s.x < c_left + cam.width
         on_y = s.y >= c_top - sh and s.y < c_top + cam.height
         if on_x and on_y:
-            img = get_sprite_cur_img(s)
-            #img_rect = img.get_rect()
-            #croprect = croprect if croprect != None else (0, 0, img_rect.width, img_rect.height)
+            img = get_sprite_cur_img(s)            
             screen.blit(img, (s.x - c_left, s.y - c_top))
-                #draw_sprite(screen, s, c_left, c_top)
+                
     return screen
         
 def get_camera_game_coords(camera, m, ts):
