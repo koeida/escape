@@ -1,4 +1,5 @@
 import pygame
+import pygame.gfxdraw
 import traceback
 import display
 from random import randint
@@ -30,12 +31,24 @@ def get_input(player, m, ts):
     if not s and not w:
         player.vy = 0
     if not a and not d:
-        player.vx = 0
+        player.vx = 0    
     
+def gen_test_map():
+    game_map = [[0 for x in range(100)] for y in range(100)]
+    for x in range(1000):
+        game_map[randint(0,99)][randint(0,99)] = randint(0,7)
+    
+    for x in range(100):
+        game_map[0][x] = 16 * 6 + 2
+        game_map[len(game_map[0]) - 1][x] = 16 * 6 + 2
+    
+    
+    for y in range(100):
+        game_map[y][0] = 16 * 6 + 2
+        game_map[y][len(game_map) - 1] = 16 * 6 + 2
         
     
-    
-    
+    return game_map
 
 def main(screen):   
     clock = pygame.time.Clock()
@@ -48,14 +61,17 @@ def main(screen):
     player = creatures.Sprite(400, 400, "player", panim)
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
-    game_map = [[0 for x in range(100)] for y in range(100)]
-    for x in range(1000):
-        game_map[randint(0,99)][randint(0,99)] = randint(0,7)
+    swidth = player.get_rect().width + 35
+    smiddle = int(swidth / 2)
+    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+   
+    pygame.gfxdraw.arc(shield_surface, smiddle, smiddle, 45, 220, 325, (255, 255, 255))  
     
-    for x in range(100):
-        game_map[10][x] = 16 * 6 + 2
+    shield= creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    
+    game_map = gen_test_map()
         
-    sprites = [player, enemy]
+    sprites = [player, enemy, shield]
     
     
     cam = display.Camera(player, 32*9, 32*9)
@@ -71,8 +87,12 @@ def main(screen):
         
         get_input(player, game_map, ts)
         
+        
         for s in sprites:
             creatures.attempt_walk(s, game_map, ts)
+            
+        shield.x = player.x - 17
+        shield.y = player.y - 10
         
         collisions.check_collisions(sprites)
             
@@ -84,16 +104,8 @@ def main(screen):
                     running = False
                 
         screen.fill((0,0,0))        
-       
-        camx = 50
-        camy = 50
-        cam_surface = display.render_camera(cam, ts, game_map, sprites)
-        screen.blit(cam_surface, (camx, camy))
-        screen.fill((255,0,0), (cam.width + camx, camy, 1, cam.height))        
-        screen.fill((255,0,0), (camx, camy, cam.width, 1))        
-        screen.fill((255,0,0), (camx, camy + cam.height, cam.width, 1))        
-        screen.fill((255,0,0), (camx, camy, 1, cam.height))            
-        screen.fill((255,0,0), (camx + int(cam.width / 2), camy + int(cam.height / 2), 2, 2))    
+        display.draw_interface(screen, cam, ts, game_map, sprites)
+        
         pygame.display.flip()
 
         

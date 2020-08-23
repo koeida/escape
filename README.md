@@ -4,4 +4,7 @@
 * Tweening
 * Sprites
 	* Easy animations
-	* Easy collisions
+	* Easy Collisions:
+		* Bounce
+* The shield thing
+	

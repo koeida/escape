@@ -60,7 +60,7 @@ def render_cam_sprites(screen, cam, sprites, ts, m):
         on_x = s.x >= c_left - sw and s.x < c_left + cam.width
         on_y = s.y >= c_top - sh and s.y < c_top + cam.height
         if on_x and on_y:
-            img = get_sprite_cur_img(s)            
+            img = s.simple_img if s.simple_img != None else get_sprite_cur_img(s)            
             screen.blit(img, (s.x - c_left, s.y - c_top))
                 
     return screen
@@ -117,6 +117,16 @@ def render_camera(camera, ts, m, sprites):
     result = render_cam_sprites(result, camera, sprites, ts, m)
     return result
     
+def draw_interface(screen, cam, ts, game_map, sprites):
+    # Draw the camera
+    CAMX = 50
+    CAMY = 50
+    cam_surface = render_camera(cam, ts, game_map, sprites)
+    screen.blit(cam_surface, (CAMX, CAMY))
+    # TASK: Maybe draw a pretty border around the camera, I dunno
+    # TASK: Draw player stats
+    # TASK: Draw inventory? 
+    # TASK: Brainstorm other things that should go on the screen
     
-    
+   
     
