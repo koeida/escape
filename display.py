@@ -44,7 +44,6 @@ def draw_tile(screen, tileset, tile_number, x, y):
     tix = tile_x * tileset.tile_width
     tiy = tile_y * tileset.tile_width    
     
-   
     screen.blit(tileset.image, (x,y), (tix, tiy, tileset.tile_width, tileset.tile_height))
         
 def get_sprite_cur_img(s):
@@ -82,8 +81,6 @@ def get_camera_game_coords(camera, m, ts):
     
 def clip_tiles(tile_surf, c_left, c_top, ts, camera):
     xgap = c_left % ts.tile_width
-    
-    
     ygap = c_top % ts.tile_height
     clipped = pygame.Surface((camera.width, camera.height))
     clipped.blit(tile_surf, (0,0), (xgap, ygap, camera.width, camera.height)) 
@@ -93,9 +90,6 @@ def render_camera_tiles(camera, ts, m):
     tw = ts.tile_width
     th = ts.tile_height
     c_left, c_top = get_camera_game_coords(camera, m, ts)
-    # Seems to go funny when c_left is negative
-    #print(c_left)
-    
     start_mx, start_my = get_map_coords(c_left, c_top, ts.tile_width, ts.tile_height)
     num_tiles_wide = int(camera.width / ts.tile_width)  
     num_tiles_high= int(camera.width / ts.tile_width) 
@@ -106,36 +100,11 @@ def render_camera_tiles(camera, ts, m):
              if y + start_my >= 0 and y + start_my < len(m) and 
                 x + start_mx >= 0 and x + start_mx < len(m[0])]
     result = pygame.Surface((camera.width + ts.tile_width, camera.height + ts.tile_height))    
+    
     for tx, ty, tnum in tiles:
         draw_tile(result, ts, tnum, tx, ty)
     
     return clip_tiles(result, c_left, c_top, ts, camera)
-    
-def render_camera_tiles_old(camera, ts, m):   
-    c_left, c_top = get_camera_game_coords(camera, m, ts)
-    start_mx, start_my = get_map_coords(c_left, c_top, ts.tile_width, ts.tile_height)
-    
-    num_tiles_wide = int(camera.width / ts.tile_width)  
-    num_tiles_high = int(camera.width / ts.tile_width) 
-    
-    result = pygame.Surface((camera.width + ts.tile_width, camera.height + ts.tile_height))
-    
-    for y in range(num_tiles_high + 1):
-        for x in range(num_tiles_wide + 1):
-            yindex = y + start_my
-            xindex = x + start_mx
-            if yindex >= 0 and yindex < len(m) and xindex >= 0 and xindex < len(m[0]): 
-                cur_tile = m[yindex][xindex]
-                draw_tile(result, ts, cur_tile, x * ts.tile_width, y * ts.tile_height)
-            else:
-                pass
-                #result.fill((0,0,0), (x * ts.tile_width, y * ts.tile_height, 32, 32))
-    
-    xgap = c_left % ts.tile_width
-    ygap = c_top % ts.tile_height
-    clipped = pygame.Surface((camera.width, camera.height))
-    clipped.blit(result, (0,0), (xgap, ygap, camera.width, camera.height)) 
-    return clipped
 
 def render_camera(camera, ts, m, sprites):
     result = render_camera_tiles(camera, ts, m)
