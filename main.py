@@ -85,8 +85,15 @@ def main(screen):
                 
         screen.fill((0,0,0))        
        
-        display.draw_camera(screen, cam, ts, game_map, 32, 32, sprites)
-        screen.fill((255,0,0), (cam.width + 32, 0, 1, cam.height))        
+        camx = 50
+        camy = 50
+        cam_surface = display.render_camera(cam, ts, game_map, sprites)
+        screen.blit(cam_surface, (camx, camy))
+        screen.fill((255,0,0), (cam.width + camx, camy, 1, cam.height))        
+        screen.fill((255,0,0), (camx, camy, cam.width, 1))        
+        screen.fill((255,0,0), (camx, camy + cam.height, cam.width, 1))        
+        screen.fill((255,0,0), (camx, camy, 1, cam.height))            
+        screen.fill((255,0,0), (camx + int(cam.width / 2), camy + int(cam.height / 2), 2, 2))    
         pygame.display.flip()
 
         

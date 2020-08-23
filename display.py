@@ -46,38 +46,53 @@ def draw_tile(screen, tileset, tile_number, x, y):
    
     screen.blit(tileset.image, (x,y), (tix, tiy, tileset.tile_width, tileset.tile_height))
         
-        
-def draw_sprite(screen, s, cam_left, cam_top, croprect=None):
+def get_sprite_cur_img(s):
     aname, aframes, adelay = s.animations[s.current_animation]
     img = world.image_db[aname]
-    img_rect = img.get_rect()
-    croprect = croprect if croprect != None else (0, 0, img_rect.width, img_rect.height)
-    screen.blit(img, (s.x - cam_left, s.y - cam_top), croprect)
-    
-    
-def draw_cam_sprites(screen, camera, sprites, c_left, c_top):
+    return img
+                
+def render_cam_sprites(screen, cam, sprites, ts, m):
+    c_left, c_top = get_camera_game_coords(cam, m, ts)
     for s in sprites:
-        if s.x > c_left and s.x < c_left + camera.width:
-            if s.y > c_top and s.y < c_top + camera.height:
-                draw_sprite(screen,s, c_left, c_top)                
-    
-
-def draw_camera(screen, camera, ts, m, sx, sy, sprites):
+        srect = s.get_rect()
+        sw = srect.width
+        sh = srect.height
+        on_x = s.x >= c_left and s.x < c_left + cam.width - sw
+        on_y = s.y >= c_top and s.y < c_top + cam.height - sh
+        if on_x and on_y:
+            img = get_sprite_cur_img(s)
+            #img_rect = img.get_rect()
+            #croprect = croprect if croprect != None else (0, 0, img_rect.width, img_rect.height)
+            screen.blit(img, (s.x - c_left, s.y - c_top))
+                #draw_sprite(screen, s, c_left, c_top)
+    return screen
+        
+def get_camera_game_coords(camera, m, ts):
     tgtx = camera.target.x
     tgty = camera.target.y
+   
+    centerx = int(camera.width / 2)
+    centery = int(camera.height / 2)
     
-    if camera.target.x <= int(camera.width / 2):
-        tgtx = int(camera.width / 2)
-    if camera.target.y <= int(camera.width / 2):
-        tgty = int(camera.width / 2)
-        
+    maxx = len(m[0]) * ts.tile_width - centerx
+    maxy = len(m) * ts.tile_width - centery
     
-    c_left = tgtx - int(camera.width / 2) + randint(0, camera.shake)
-    c_top = tgty - int(camera.height / 2) + randint(0, camera.shake)
-        
-    xgap = c_left % ts.tile_width
-    ygap = c_top % ts.tile_height
+    if tgtx <= centerx:
+        tgtx = centerx        
+    if tgty <= centery:
+        tgty = centery
+    if tgtx >= maxx:
+        tgtx = maxx
+    if tgty >= maxy:
+        tgty = maxy
     
+    c_left = tgtx - centerx + randint(0, camera.shake)
+    c_top = tgty - centery + randint(0, camera.shake)
+    
+    return (c_left, c_top)
+
+def render_camera_tiles(camera, ts, m):   
+    c_left, c_top = get_camera_game_coords(camera, m, ts)
     start_mx, start_my = get_map_coords(c_left, c_top, ts.tile_width, ts.tile_height)
     
     num_tiles_wide = int(camera.width / ts.tile_width)  
@@ -93,7 +108,17 @@ def draw_camera(screen, camera, ts, m, sx, sy, sprites):
                 cur_tile = m[yindex][xindex]
                 draw_tile(result, ts, cur_tile, x * ts.tile_width, y * ts.tile_height)
     
+    xgap = c_left % ts.tile_width
+    ygap = c_top % ts.tile_height
+    clipped = pygame.Surface((camera.width, camera.height))
+    clipped.blit(result, (0,0), (xgap, ygap, camera.width, camera.height)) 
+    return clipped
+
+def render_camera(camera, ts, m, sprites):
+    result = render_camera_tiles(camera, ts, m)
+    result = render_cam_sprites(result, camera, sprites, ts, m)
+    return result
     
-    screen.blit(result, (sx, sy), (xgap, ygap, camera.width, camera.height))
-    draw_cam_sprites(screen, camera, sprites, c_left, c_top)
+    
+    
     
