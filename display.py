@@ -103,6 +103,7 @@ def render_camera_tiles(camera, ts, m):
     
     for tx, ty, tnum in tiles:
         draw_tile(result, ts, tnum, tx, ty)
+
     
     return clip_tiles(result, c_left, c_top, ts, camera)
 
