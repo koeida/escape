@@ -19,6 +19,8 @@ def get_input(player, m, ts):
     s = keys[pygame.K_s]
     d = keys[pygame.K_d]
     a = keys[pygame.K_a]
+
+    oldfacing = player.facing
     
     if w:
         player.vy = -speed
@@ -41,6 +43,9 @@ def get_input(player, m, ts):
         creatures.switch_anim(player,"standing")
     else:
         creatures.switch_anim(player,"walking")
+
+    if player.facing != oldfacing:
+        player.current_frame = 0
     
 def gen_test_map():
     game_map = [[0 for x in range(100)] for y in range(100)]
