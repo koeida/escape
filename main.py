@@ -56,9 +56,9 @@ def main(screen):
     running = True
     
     world.load_assets(world.image_db)
-    ts = display.load_tileset("cavetiles_01.png", 32, 32)    
+    ts = display.load_tileset(pygame.image.load("cavetiles_01.png"), 32, 32)    
     
-    panim = {"walking": ("test_monk", [0], 40)}
+    panim = {"walking": ("monk", 64, 64, [0], 5)}
     player = creatures.Sprite(400, 400, "player", panim)
     enemy = creatures.Sprite(600, 600, "monk", panim)
     

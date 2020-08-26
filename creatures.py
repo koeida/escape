@@ -14,7 +14,8 @@ class Sprite:
         self.animations = animations
         self.current_animation = current_animation
         self.current_frame = 0
-        self.anim_timer = None if animations == None else animations[current_animation][2]
+        self.cur_anim_timer = 0
+        self.anim_timer = None if animations == None else animations[current_animation][4]
         self.last_x = self.x
         self.last_y = self.y
         self.vx = 0

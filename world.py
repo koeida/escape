@@ -4,7 +4,8 @@ TILE_WIDTH = 32
 TILE_HEIGHT = 32
 FPS = 60
 
-image_db = {"test_monk": "robe.png"}
+image_db = {"dude": "BODY_male.png",
+            "monk": "robe.png"}
     
 def load_assets(db):
     for key in image_db.keys():
