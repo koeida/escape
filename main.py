@@ -58,27 +58,20 @@ def main(screen):
     world.load_assets(world.image_db)
     ts = display.load_tileset(pygame.image.load("cavetiles_01.png"), 32, 32)    
     
-    panim = {"walking": ("monk", 64, 64, [0], 5)}
+    panim = {"walking": ("dude", 64, 64, [0], 5)}
     player = creatures.Sprite(400, 400, "player", panim)
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
-    swidth = player.get_rect().width + 35
-    smiddle = int(swidth / 2)
-    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    
-    shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
-    border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
+    #swidth = player.get_rect().width + 35
+    #smiddle = int(swidth / 2)
+    #shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    #
+    #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
     game_map = gen_test_map()
         
-    sprites = [player, enemy, shield]
-    
-    for y in range(len(game_map)):
-        for x in range(len(game_map[0])):
-            if game_map[y][x] == 16 * 6 + 2:
-                sprites.append(creatures.Sprite(x * 32, y * 32, "wall", simple_img=border_surf))
-                
-    
+    sprites = [player, enemy]
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
@@ -100,8 +93,8 @@ def main(screen):
             if s.kind != "wall":
                 creatures.attempt_walk(s, game_map, ts)
             
-        shield.x = player.x - 17
-        shield.y = player.y - 10
+        #shield.x = player.x - 17
+        #shield.y = player.y - 10
         #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
         #shield.simple_img = render_shield(player_sx, player_sy, mouse_x, mouse_y, swidth)
         

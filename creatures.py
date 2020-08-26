@@ -1,5 +1,7 @@
 from gamemap import get_map_coords, onscreen, walkable
 import world
+import display
+import pygame
 
 class Animation:
     def __init__(self, name, anim_db):
@@ -25,11 +27,10 @@ class Sprite:
         if self.simple_img != None:
             return self.simple_img.get_rect()
         else:
-            canim = self.animations[self.current_animation][0]
-            img = world.image_db[canim]
-            result = img.get_rect()
-            result.x = self.x
-            result.y = self.y
+            aname, width, height, aframes, adelay = self.animations[self.current_animation]
+            img = world.image_db[aname]
+            ts = display.load_tileset(img, width, height)
+            result = pygame.Rect(self.x, self.y, width, height)
             return result 
             
 
