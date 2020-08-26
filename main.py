@@ -58,7 +58,7 @@ def main(screen):
     world.load_assets(world.image_db)
     ts = display.load_tileset(pygame.image.load("cavetiles_01.png"), 32, 32)    
     
-    panim = {"walking": ("dude", 64, 64, [0], 5)}
+    panim = {"walking": ("dude", 64, 64, range(1,9), 5)}
     player = creatures.Sprite(400, 400, "player", panim)
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
@@ -90,6 +90,7 @@ def main(screen):
         
         
         for s in sprites:
+            creatures.tick_anim(s)
             if s.kind != "wall":
                 creatures.attempt_walk(s, game_map, ts)
             

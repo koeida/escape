@@ -34,6 +34,14 @@ class Sprite:
             return result 
             
 
+def tick_anim(s):
+    if s.anim_timer == None:
+        return
+    s.cur_anim_timer += 1
+    if s.cur_anim_timer > s.anim_timer:
+        s.cur_anim_timer = 0
+        s.current_frame = s.current_frame + 1 if s.current_frame < len(s.animations[s.current_animation][3]) - 1 else 0
+
 def attempt_walk(s, m, ts):
     s.last_x = s.x
     s.last_y = s.y
