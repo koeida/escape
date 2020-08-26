@@ -61,7 +61,7 @@ def render_sprite(screen, c_left, c_top, s):
     if s.simple_img != None:
         screen.blit(s.simple_img, (s.x - c_left, s.y - c_top))
     else:
-        aname, width, height, aframes, adelay = s.animations[s.current_animation]
+        aname, width, height, aframes, adelay = s.animations[s.current_animation][s.facing]
         img = world.image_db[aname]
         ts = load_tileset(img, width, height)
         current_tile_number = aframes[s.current_frame]

@@ -17,30 +17,48 @@ class Sprite:
         self.current_animation = current_animation
         self.current_frame = 0
         self.cur_anim_timer = 0
-        self.anim_timer = None if animations == None else animations[current_animation][4]
+        self.facing = "down"
+        self.anim_timer = None if animations == None else animations[current_animation][self.facing][4]
         self.last_x = self.x
         self.last_y = self.y
         self.vx = 0
         self.vy = 0
         self.simple_img = simple_img
+        self.next_anim = None
     def get_rect(self):
         if self.simple_img != None:
             return self.simple_img.get_rect()
         else:
-            aname, width, height, aframes, adelay = self.animations[self.current_animation]
+            aname, width, height, aframes, adelay = self.animations[self.current_animation][self.facing]
             img = world.image_db[aname]
             ts = display.load_tileset(img, width, height)
             result = pygame.Rect(self.x, self.y, width, height)
             return result 
             
+def switch_anim(s, anim_name):
+    if s.current_animation == anim_name:
+        return
+    if s.current_animation in ["walking", "standing"]:
+        s.next_anim = None
+        s.current_frame = 0
+        s.cur_anim_timer = 0
+        s.current_animation = anim_name
+    else:
+        s.next_anim = anim_name
+    
 
 def tick_anim(s):
     if s.anim_timer == None:
         return
     s.cur_anim_timer += 1
     if s.cur_anim_timer > s.anim_timer:
+        current_anim = s.animations[s.current_animation][s.facing]
         s.cur_anim_timer = 0
-        s.current_frame = s.current_frame + 1 if s.current_frame < len(s.animations[s.current_animation][3]) - 1 else 0
+        s.current_frame = s.current_frame + 1 if s.current_frame < len(current_anim[3]) - 1 else 0
+        if s.current_frame == 0 and s.next_anim != None:
+            s.current_animation = s.next_anim
+            s.next_anim = None
+            
 
 def attempt_walk(s, m, ts):
     s.last_x = s.x

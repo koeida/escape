@@ -22,17 +22,25 @@ def get_input(player, m, ts):
     
     if w:
         player.vy = -speed
+        player.facing = "up"
     if s:
         player.vy = speed
+        player.facing = "down"
     if d:
         player.vx = speed
+        player.facing = "right"
     if a:
         player.vx = -speed
-        
+        player.facing = "left"
     if not s and not w:
         player.vy = 0
     if not a and not d:
         player.vx = 0    
+
+    if player.vx == 0 and player.vy == 0:
+        creatures.switch_anim(player,"standing")
+    else:
+        creatures.switch_anim(player,"walking")
     
 def gen_test_map():
     game_map = [[0 for x in range(100)] for y in range(100)]
@@ -58,7 +66,15 @@ def main(screen):
     world.load_assets(world.image_db)
     ts = display.load_tileset(pygame.image.load("cavetiles_01.png"), 32, 32)    
     
-    panim = {"walking": ("dude", 64, 64, range(1,9), 5)}
+    panim = {
+             "standing": {"up": ("dude", 64, 64, [0], 5),
+                         "left": ("dude", 64, 64, [9], 5),
+                         "down": ("dude", 64, 64, [18], 5),
+                         "right": ("dude", 64, 64, [29], 5)},
+             "walking": {"up": ("dude", 64, 64, range(1,9), 5),
+                        "left": ("dude", 64, 64, range(10, 17), 5),
+                        "down": ("dude", 64, 64, range(19, 27), 5),
+                        "right": ("dude", 64, 64, range(29, 36), 5)}}
     player = creatures.Sprite(400, 400, "player", panim)
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
