@@ -3,6 +3,7 @@ from collections import namedtuple
 from gamemap import get_map_coords
 import world
 from random import randint
+from functools import reduce
 
 Tileset = namedtuple("Tileset", "image tile_width tile_height tiles_per_line rows data")
 
@@ -43,6 +44,21 @@ def draw_tile(screen, tileset, tile_number, x, y):
     tiy = tile_y * tileset.tile_width    
     
     screen.blit(tileset.image, (x,y), (tix, tiy, tileset.tile_width, tileset.tile_height))
+
+def stack_spritesheets(ss):
+    def blitreturn(s1,s2):
+        s1.blit(s2,(0,0))
+        return s1
+
+    
+    width = world.image_db[ss[0]].get_rect().width
+    height = world.image_db[ss[0]].get_rect().height
+    blanksurf = pygame.Surface((width,height), pygame.SRCALPHA)
+    
+    ss = list(map(lambda s: world.image_db[s], ss))
+
+    return reduce(blitreturn, [blanksurf] + ss)
+    
         
 def get_sprite_cur_img(s):
     aname, width, height, aframes, adelay = s.animations[s.current_animation]
