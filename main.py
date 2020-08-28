@@ -19,20 +19,33 @@ def get_input(player, m, ts):
     s = keys[pygame.K_s]
     d = keys[pygame.K_d]
     a = keys[pygame.K_a]
+
+    oldfacing = player.facing
     
     if w:
         player.vy = -speed
+        player.facing = "up"
     if s:
         player.vy = speed
+        player.facing = "down"
     if d:
         player.vx = speed
+        player.facing = "right"
     if a:
         player.vx = -speed
-        
+        player.facing = "left"
     if not s and not w:
         player.vy = 0
     if not a and not d:
         player.vx = 0    
+
+    if player.vx == 0 and player.vy == 0:
+        creatures.switch_anim(player,"standing")
+    else:
+        creatures.switch_anim(player,"walking")
+
+    if player.facing != oldfacing:
+        player.current_frame = 0
     
 def gen_test_map():
     game_map = [[0 for x in range(100)] for y in range(100)]
@@ -55,30 +68,35 @@ def main(screen):
     clock = pygame.time.Clock()
     running = True
     
-    world.load_assets(world.image_db)
-    ts = display.load_tileset("cavetiles_01.png", 32, 32)    
+    world.load_assets()
+
+    stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
+    world.image_db["dude"] = stacked_dude
+
+    ts = display.load_tileset(pygame.image.load("cavetiles_01.png"), 32, 32)    
     
-    panim = {"walking": ("test_monk", [0], 40)}
+    panim = {
+             "standing": {"up": ("dude", 64, 64, [0], 5),
+                         "left": ("dude", 64, 64, [9], 5),
+                         "down": ("dude", 64, 64, [18], 5),
+                         "right": ("dude", 64, 64, [29], 5)},
+             "walking": {"up": ("dude", 64, 64, range(1,9), 5),
+                        "left": ("dude", 64, 64, range(10, 18), 5),
+                        "down": ("dude", 64, 64, range(19, 27), 5),
+                        "right": ("dude", 64, 64, range(28, 36), 5)}}
     player = creatures.Sprite(400, 400, "player", panim)
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
-    swidth = player.get_rect().width + 35
-    smiddle = int(swidth / 2)
-    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    
-    shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
-    border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
+    #swidth = player.get_rect().width + 35
+    #smiddle = int(swidth / 2)
+    #shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    #
+    #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
     game_map = gen_test_map()
         
-    sprites = [player, enemy, shield]
-    
-    for y in range(len(game_map)):
-        for x in range(len(game_map[0])):
-            if game_map[y][x] == 16 * 6 + 2:
-                sprites.append(creatures.Sprite(x * 32, y * 32, "wall", simple_img=border_surf))
-                
-    
+    sprites = [player, enemy]
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
@@ -97,11 +115,12 @@ def main(screen):
         
         
         for s in sprites:
+            creatures.tick_anim(s)
             if s.kind != "wall":
                 creatures.attempt_walk(s, game_map, ts)
             
-        shield.x = player.x - 17
-        shield.y = player.y - 10
+        #shield.x = player.x - 17
+        #shield.y = player.y - 10
         #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
         #shield.simple_img = render_shield(player_sx, player_sy, mouse_x, mouse_y, swidth)
         

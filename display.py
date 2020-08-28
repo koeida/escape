@@ -3,6 +3,7 @@ from collections import namedtuple
 from gamemap import get_map_coords
 import world
 from random import randint
+from functools import reduce
 
 Tileset = namedtuple("Tileset", "image tile_width tile_height tiles_per_line rows data")
 
@@ -25,15 +26,13 @@ def tile(walkable=True):
     results.walkable = walkable
     return results
 
-def load_tileset(f, tile_width, tile_height):
-    tileset_img = pygame.image.load(f)
+def load_tileset(tileset_img, tile_width, tile_height):
     img_width = tileset_img.get_rect().width   
     img_height = tileset_img.get_rect().height    
     tiles_per_line = int(img_width / tile_width)
     rows = int(img_height / tile_height)   
     
     data = {98: tile(False)} 
-    
    
     return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows, data)
 
@@ -45,11 +44,45 @@ def draw_tile(screen, tileset, tile_number, x, y):
     tiy = tile_y * tileset.tile_width    
     
     screen.blit(tileset.image, (x,y), (tix, tiy, tileset.tile_width, tileset.tile_height))
+
+def stack_spritesheets(ss):
+    def blitreturn(s1,s2):
+        s1.blit(s2,(0,0))
+        return s1
+
+    
+    width = world.image_db[ss[0]].get_rect().width
+    height = world.image_db[ss[0]].get_rect().height
+    blanksurf = pygame.Surface((width,height), pygame.SRCALPHA)
+    
+    ss = list(map(lambda s: world.image_db[s], ss))
+
+    return reduce(blitreturn, [blanksurf] + ss)
+    
         
 def get_sprite_cur_img(s):
-    aname, aframes, adelay = s.animations[s.current_animation]
+    aname, width, height, aframes, adelay = s.animations[s.current_animation]
     img = world.image_db[aname]
     return img
+
+def get_tile_coords(tileset, tile_number):
+    tile_y = int(tile_number / tileset.tiles_per_line)
+    tile_x = int(tile_number % tileset.tiles_per_line)
+    
+    tix = tile_x * tileset.tile_width
+    tiy = tile_y * tileset.tile_width    
+    return (tix, tiy)
+
+def render_sprite(screen, c_left, c_top, s):
+    if s.simple_img != None:
+        screen.blit(s.simple_img, (s.x - c_left, s.y - c_top))
+    else:
+        aname, width, height, aframes, adelay = s.animations[s.current_animation][s.facing]
+        img = world.image_db[aname]
+        ts = load_tileset(img, width, height)
+        current_tile_number = aframes[s.current_frame]
+        tix, tiy = get_tile_coords(ts, current_tile_number) 
+        screen.blit(img, (s.x - c_left, s.y - c_top), (tix, tiy, ts.tile_width, ts.tile_height))
                 
 def render_cam_sprites(screen, cam, sprites, ts, m):
     c_left, c_top = get_camera_game_coords(cam, m, ts)
@@ -60,8 +93,7 @@ def render_cam_sprites(screen, cam, sprites, ts, m):
         on_x = s.x >= c_left - sw and s.x < c_left + cam.width
         on_y = s.y >= c_top - sh and s.y < c_top + cam.height
         if on_x and on_y:
-            img = s.simple_img if s.simple_img != None else get_sprite_cur_img(s)            
-            screen.blit(img, (s.x - c_left, s.y - c_top))
+            render_sprite(screen, c_left, c_top, s)
                 
     return screen
         

@@ -4,8 +4,15 @@ TILE_WIDTH = 32
 TILE_HEIGHT = 32
 FPS = 60
 
-image_db = {"test_monk": "robe.png"}
+image_db = ["BODY_male.png",
+            "LEGS_robe_skirt.png"]
     
-def load_assets(db):
-    for key in image_db.keys():
-        image_db[key] = pygame.image.load(image_db[key])
+def load_assets():
+    global image_db
+    assets_dir = "lpc_entry/png/walkcycle/" 
+
+    result = {}
+    for fname in image_db:
+        noending = fname[:-4]
+        result[noending] = pygame.image.load(assets_dir + fname)
+    image_db = result
