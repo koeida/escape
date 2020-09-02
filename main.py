@@ -1,68 +1,15 @@
+from gamemap import gen_test_map
+from input import get_input
+from random import randint
+import collisions
+import creatures
+import display
+import math
 import pygame
 import pygame.gfxdraw
-import traceback
-import display
-from random import randint
-import creatures
 import timers
+import traceback
 import world
-import collisions
-import math
-    
-def get_input(player, m, ts):
-    keys = pygame.key.get_pressed()
-    speed = 4
-    dx = 0
-    dy = 0
-    
-    w = keys[pygame.K_w]
-    s = keys[pygame.K_s]
-    d = keys[pygame.K_d]
-    a = keys[pygame.K_a]
-
-    oldfacing = player.facing
-    
-    if w:
-        player.vy = -speed
-        player.facing = "up"
-    if s:
-        player.vy = speed
-        player.facing = "down"
-    if d:
-        player.vx = speed
-        player.facing = "right"
-    if a:
-        player.vx = -speed
-        player.facing = "left"
-    if not s and not w:
-        player.vy = 0
-    if not a and not d:
-        player.vx = 0    
-
-    if player.vx == 0 and player.vy == 0:
-        creatures.switch_anim(player,"standing")
-    else:
-        creatures.switch_anim(player,"walking")
-
-    if player.facing != oldfacing:
-        player.current_frame = 0
-    
-def gen_test_map():
-    game_map = [[0 for x in range(100)] for y in range(100)]
-    for x in range(1000):
-        game_map[randint(0,99)][randint(0,99)] = randint(0,7)
-    
-    for x in range(100):
-        game_map[0][x] = 16 * 6 + 2
-        game_map[len(game_map[0]) - 1][x] = 16 * 6 + 2
-    
-    
-    for y in range(100):
-        game_map[y][0] = 16 * 6 + 2
-        game_map[y][len(game_map) - 1] = 16 * 6 + 2
-        
-    
-    return game_map
 
 def main(screen):   
     clock = pygame.time.Clock()
@@ -94,7 +41,6 @@ def main(screen):
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
-    
     
     # Timer Example
     timers.add_timer(5, lambda: cam.set_shake(5))
