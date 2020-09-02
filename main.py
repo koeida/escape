@@ -88,13 +88,6 @@ def main(screen):
     player = creatures.Sprite(400, 400, "player", panim)
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
-    #swidth = player.get_rect().width + 100 #35
-    #smiddle = int(swidth / 2)
-    #shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    
-    #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
-    #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
 
     game_map = gen_test_map()
         
@@ -118,13 +111,8 @@ def main(screen):
         
         for s in sprites:
             creatures.tick_anim(s)
-            if s.kind != "wall":
-                creatures.attempt_walk(s, game_map, ts)
+            creatures.attempt_walk(s, game_map, ts)
             
-        #shield.x = player.x - 65
-        #shield.y = player.y - 65
-        #player_sx, player_sy = #display.calc_screen_coords(coords, camrect)
-        #shield.simple_img = display.render_shield(0, 0, mouse_x, mouse_y, swidth)
         
         collisions.check_collisions(sprites)
             

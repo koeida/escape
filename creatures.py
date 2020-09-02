@@ -78,4 +78,20 @@ def attempt_walk(s, m, ts):
         walkable(xtr, ytr, m, ts) and walkable(xbr, ybr, m, ts)):
         s.x = new_x
         s.y = new_y
+
+def make_shield():
+    #swidth = player.get_rect().width + 100 #35
+    #smiddle = int(swidth / 2)
+    #shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     
+    #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
+    pass
+
+def tick_shield():
+    #shield.x = player.x - 65
+    #shield.y = player.y - 65
+    #player_sx, player_sy = #display.calc_screen_coords(coords, camrect)
+    #shield.simple_img = display.render_shield(0, 0, mouse_x, mouse_y, swidth)
+    pass
