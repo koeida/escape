@@ -86,8 +86,7 @@ def main(screen):
                         "right": ("dude", 64, 64, range(28, 36), 5)}}
 
     player = creatures.Sprite(400, 400, "player", panim)
-    enemy = creatures.Sprite(600, 600, "monk", panim)
-    
+    enemy = creatures.Sprite(600, 600, "monk", panim) 
 
     game_map = gen_test_map()
         
@@ -106,13 +105,12 @@ def main(screen):
         timers.update_timers()
         
         mouse_x, mouse_y = pygame.mouse.get_pos()
+
         get_input(player, game_map, ts)       
-        
         
         for s in sprites:
             creatures.tick_anim(s)
             creatures.attempt_walk(s, game_map, ts)
-            
         
         collisions.check_collisions(sprites)
             

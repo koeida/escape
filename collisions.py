@@ -17,4 +17,5 @@ def check_collisions(sprites):
         
     
 
-collision_db = {("player", "monk"): keep_separated}
+collision_db = {("player", "monk"): keep_separated,
+                ("player", "wall"): keep_separated}
