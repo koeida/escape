@@ -1,5 +1,8 @@
 # escape
 
+## Game design questions:
+* How does attacking work? You click, but then what happens?
+
 ## Projects to grab: not too hard
 * Make the interface
     * Decorations around camera
@@ -27,4 +30,8 @@
 ## Sam projects
 * Dungeon generation
     * Standard rogue-style BSP tree room/hallway generation
+
+## Zad projects
+* Monsters
 	
+## Ridgeley projects
