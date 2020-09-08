@@ -38,7 +38,7 @@ def load_tileset(tileset_img, tile_width, tile_height):
 
 def draw_tile(screen, tileset, tile_number, x, y):
     tile_y = int(tile_number / tileset.tiles_per_line)
-    tile_x = int(tile_number / tileset.tiles_per_line)
+    tile_x = int(tile_number % tileset.tiles_per_line)
     
     tix = tile_x * tileset.tile_width
     tiy = tile_y * tileset.tile_width    

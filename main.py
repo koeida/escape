@@ -8,6 +8,7 @@ import timers
 import world
 import collisions
 import math
+import dungeongen
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
@@ -94,7 +95,7 @@ def main(screen):
     #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
     #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
-    game_map = gen_test_map()
+    game_map = dungeongen.make_dungeon(100)
         
     sprites = [player, enemy]
     
