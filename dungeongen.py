@@ -96,8 +96,24 @@ def get_door(r, side):
     if l == []:
         return None
     return choice(l)
+    
         
     pass
+    
+def change_d(dir, d):
+    if dir == "u":
+        cur_x = d[0]
+        cur_y = d[1] - 1
+    if dir == "d":
+        cur_x = d[0]
+        cur_y = d[1] + 1
+    if dir == "l":
+        cur_x = d[0] - 1
+        cur_y = d[1] 
+    if dir == "r":
+        cur_x = d[0] + 1
+        cur_y = d[1]
+    return (cur_x, cur_y)
 
 def stamp_hallway(r1, r2, atype, m):
     d1 = get_door(r1, atype[0])
@@ -107,36 +123,34 @@ def stamp_hallway(r1, r2, atype, m):
     m[d1[1]][d1[0]] = 5
     m[d2[1]][d2[0]] = 5
     dir = atype[0]
-    if dir == "u":
-        cur_x = d1[0]
-        cur_y = d1[1] - 1
-    if dir == "d":
-        cur_x = d1[0]
-        cur_y = d1[1] + 1
-    if dir == "l":
-        cur_x = d1[0] - 1
-        cur_y = d1[1] 
-    if dir == "r":
-        cur_x = d1[0] + 1
-        cur_y = d1[1]
+    cur_x, cur_y = change_d(dir, d1)
+    end = change_d(atype[1], d2)
     while True:
         m[cur_y][cur_x] = 10
+        old_x = cur_x
+        old_y = cur_y
         if randint(1,2) == 1   :
-            if cur_x < d2[0]:
+            if cur_x < end[0]:
                 cur_x += 1
-            elif cur_x > d2[0]: 
+            elif cur_x > end[0]: 
                 cur_x -= 1
             else:
                 cur_x += randint(-1, 1)
         else:
-            if cur_y < d2[1]:
+            if cur_y < end[1]:
                 cur_y += 1
-            elif cur_y > d2[1]:
+            elif cur_y > end[1]:
                 cur_y -= 1
             else:
                 cur_y += randint(-1, 1)
-        if cur_x == d2[0] and cur_y == d2[1]:
+        if cur_x == end[0] and cur_y == end[1]:
             return
+         
+        if m[cur_y][cur_x] in [0, 1, 98]:
+            cur_x = old_x
+            cur_y = old_y
+
+        
 def make_dungeon(size):
     blank_tile = 33
     dungeon = [[blank_tile for x in range(size)] for y in range(size)]
