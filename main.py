@@ -74,7 +74,7 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
 
-    ts = display.load_tileset(pygame.image.load("cavetiles_01.png"), 32, 32)    
+    ts = display.load_tileset(pygame.image.load("basictiles.png"), 32, 32)    
     
     panim = {
              "standing": {"up": ("dude", 64, 64, [0], 5),
