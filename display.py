@@ -33,7 +33,10 @@ def load_tileset(tileset_img, tile_width, tile_height):
     tiles_per_line = int(img_width / tile_width)
     rows = int(img_height / tile_height)   
     
-    data = {98: tile(False)} 
+    data = {1: tile(False),
+            3: tile(False),
+            6: tile(False),
+            12: tile(False)} 
    
     return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows, data)
 
@@ -84,6 +87,8 @@ def render_sprite(screen, c_left, c_top, s):
         current_tile_number = aframes[s.current_frame]
         tix, tiy = get_tile_coords(ts, current_tile_number) 
         screen.blit(img, (s.x - c_left, s.y - c_top), (tix, tiy, ts.tile_width, ts.tile_height))
+        hitbox_rect = pygame.Rect(s.x + s.hitbox.x - c_left, s.y + s.hitbox.y - c_top, s.hitbox.width, s.hitbox.height)
+        pygame.gfxdraw.rectangle(screen, hitbox_rect, (255,0,0))
                 
 def render_cam_sprites(screen, cam, sprites, ts, m):
     c_left, c_top = get_camera_game_coords(cam, m, ts)

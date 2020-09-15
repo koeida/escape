@@ -89,6 +89,7 @@ def main(screen):
                         "right": ("dude", 64, 64, range(28, 36), 5)}}
 
     player = creatures.Sprite(400, 400, "player", panim)
+    player.hitbox = pygame.Rect(24, 43, 18, 18)
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
     #swidth = player.get_rect().width + 35
@@ -101,7 +102,7 @@ def main(screen):
     game_map = dungeongen.make_dungeon(100)
 
         
-    sprites = [player, enemy]
+    sprites = [player]
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)

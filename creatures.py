@@ -26,6 +26,7 @@ class Sprite:
         self.vy = 0
         self.simple_img = simple_img
         self.next_anim = None
+        self.hitbox = self.get_rect()
     def get_rect(self):
         if self.simple_img != None:
             return self.simple_img.get_rect()
@@ -64,25 +65,31 @@ def tick_anim(s):
 def attempt_walk(s, m, ts):
     s.last_x = s.x
     s.last_y = s.y
-    
-    new_x = s.x + s.vx
-    new_y = s.y + s.vy
-    
-    sw = s.get_rect().width
-    sh = s.get_rect().height
-    
-    xtl, ytl = get_map_coords(new_x, new_y, world.TILE_WIDTH, world.TILE_HEIGHT)
-    xtr, ytr = get_map_coords(new_x + sw, new_y, world.TILE_WIDTH, world.TILE_HEIGHT)
-    xbl, ybl = get_map_coords(new_x, new_y + sh, world.TILE_WIDTH, world.TILE_HEIGHT)
-    xbr, ybr = get_map_coords(new_x + sw, new_y + sh, world.TILE_WIDTH, world.TILE_HEIGHT)
 
-    if not (walkable(xtl, xtl, m, ts) and walkable(xbl, ybl, m, ts) and walkable(xtr, ytr, m, ts) and walkable(xbr, ybr, m, ts)):
-        dummy_sprite = Sprite(0,0,"wall", None)
-        cfunc = collisions.collision_db[(s.kind, "wall")]
-        cfunc(s,dummy_sprite)
-    else:
-        s.x = new_x
-        s.y = new_y
+    s.x += s.vx
+    s.y += s.vy
+
+    hx = s.x + s.hitbox.x 
+    hy = s.y + s.hitbox.y
+    left = int(hx / world.TILE_WIDTH)
+    right = int((hx + s.hitbox.width) / world.TILE_WIDTH)
+    top = int(hy / world.TILE_WIDTH )
+    bottom = int((hy + s.hitbox.height) / world.TILE_WIDTH )
+    coords = [(left, top), (left, bottom), (right, top), (right, bottom)]
+
+    collision = False
+    for tx, ty in coords:
+        if not walkable(tx, ty, m, ts):
+            print("ow: (%d, %d)" % (tx, ty)) 
+            collision = True  
+
+    if collision:
+        s.x = s.last_x
+        s.y = s.last_y
+        return
+
+        
+    
 
 def make_shield():
     #swidth = player.get_rect().width + 100 #35
