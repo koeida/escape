@@ -2,8 +2,9 @@ from gamemap import get_map_coords, onscreen, walkable
 import world
 import display
 import pygame
+import collisions
 
-class Animation:
+class Animation: 
     def __init__(self, name, anim_db):
         self.name = name
         self.anim_db = anim_db
@@ -74,7 +75,28 @@ def attempt_walk(s, m, ts):
     xtr, ytr = get_map_coords(new_x + sw, new_y, world.TILE_WIDTH, world.TILE_HEIGHT)
     xbl, ybl = get_map_coords(new_x, new_y + sh, world.TILE_WIDTH, world.TILE_HEIGHT)
     xbr, ybr = get_map_coords(new_x + sw, new_y + sh, world.TILE_WIDTH, world.TILE_HEIGHT)
-    if (walkable(xtl, xtl, m, ts) and walkable(xbl, ybl, m, ts) and 
-    walkable(xtr, ytr, m, ts) and walkable(xbr, ybr, m, ts)):
+
+    if not (walkable(xtl, xtl, m, ts) and walkable(xbl, ybl, m, ts) and walkable(xtr, ytr, m, ts) and walkable(xbr, ybr, m, ts)):
+        dummy_sprite = Sprite(0,0,"wall", None)
+        cfunc = collisions.collision_db[(s.kind, "wall")]
+        cfunc(s,dummy_sprite)
+    else:
         s.x = new_x
-        s.y = new_y   
+        s.y = new_y
+
+def make_shield():
+    #swidth = player.get_rect().width + 100 #35
+    #smiddle = int(swidth / 2)
+    #shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    
+    #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
+    pass
+
+def tick_shield():
+    #shield.x = player.x - 65
+    #shield.y = player.y - 65
+    #player_sx, player_sy = #display.calc_screen_coords(coords, camrect)
+    #shield.simple_img = display.render_shield(0, 0, mouse_x, mouse_y, swidth)
+    pass

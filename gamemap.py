@@ -19,3 +19,20 @@ def walkable(mapx, mapy, m, ts):
         return ts.data[current_tile].walkable
     else:
         return True
+
+def gen_test_map():
+    game_map = [[0 for x in range(100)] for y in range(100)]
+    for x in range(1000):
+        game_map[randint(0,99)][randint(0,99)] = randint(0,7)
+    
+    for x in range(100):
+        game_map[0][x] = 16 * 6 + 2
+        game_map[len(game_map[0]) - 1][x] = 16 * 6 + 2
+    
+    
+    for y in range(100):
+        game_map[y][0] = 16 * 6 + 2
+        game_map[y][len(game_map) - 1] = 16 * 6 + 2
+        
+    
+    return game_map

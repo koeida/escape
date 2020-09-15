@@ -1,13 +1,15 @@
+from gamemap import gen_test_map
+from input import get_input
+from random import randint
+import collisions
+import creatures
+import display
+import math
 import pygame
 import pygame.gfxdraw
-import traceback
-import display
-from random import randint
-import creatures
 import timers
+import traceback
 import world
-import collisions
-import math
 import dungeongen
     
 def get_input(player, m, ts):
@@ -85,6 +87,7 @@ def main(screen):
                         "left": ("dude", 64, 64, range(10, 18), 5),
                         "down": ("dude", 64, 64, range(19, 27), 5),
                         "right": ("dude", 64, 64, range(28, 36), 5)}}
+
     player = creatures.Sprite(400, 400, "player", panim)
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
@@ -96,12 +99,12 @@ def main(screen):
     #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
     game_map = dungeongen.make_dungeon(100)
+
         
     sprites = [player, enemy]
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
-    
     
     # Timer Example
     timers.add_timer(5, lambda: cam.set_shake(5))
@@ -112,18 +115,12 @@ def main(screen):
         timers.update_timers()
         
         mouse_x, mouse_y = pygame.mouse.get_pos()
+
         get_input(player, game_map, ts)       
-        
         
         for s in sprites:
             creatures.tick_anim(s)
-            if s.kind != "wall":
-                creatures.attempt_walk(s, game_map, ts)
-            
-        #shield.x = player.x - 17
-        #shield.y = player.y - 10
-        #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
-        #shield.simple_img = render_shield(player_sx, player_sy, mouse_x, mouse_y, swidth)
+            creatures.attempt_walk(s, game_map, ts)
         
         collisions.check_collisions(sprites)
             
