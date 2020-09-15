@@ -75,6 +75,7 @@ def attempt_walk(s, m, ts):
     xtr, ytr = get_map_coords(new_x + sw, new_y, world.TILE_WIDTH, world.TILE_HEIGHT)
     xbl, ybl = get_map_coords(new_x, new_y + sh, world.TILE_WIDTH, world.TILE_HEIGHT)
     xbr, ybr = get_map_coords(new_x + sw, new_y + sh, world.TILE_WIDTH, world.TILE_HEIGHT)
+
     if not (walkable(xtl, xtl, m, ts) and walkable(xbl, ybl, m, ts) and walkable(xtr, ytr, m, ts) and walkable(xbr, ybr, m, ts)):
         dummy_sprite = Sprite(0,0,"wall", None)
         cfunc = collisions.collision_db[(s.kind, "wall")]

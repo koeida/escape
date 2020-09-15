@@ -10,6 +10,62 @@ import pygame.gfxdraw
 import timers
 import traceback
 import world
+import dungeongen
+    
+def get_input(player, m, ts):
+    keys = pygame.key.get_pressed()
+    speed = 4
+    dx = 0
+    dy = 0
+    
+    w = keys[pygame.K_w]
+    s = keys[pygame.K_s]
+    d = keys[pygame.K_d]
+    a = keys[pygame.K_a]
+
+    oldfacing = player.facing
+    
+    if w:
+        player.vy = -speed
+        player.facing = "up"
+    if s:
+        player.vy = speed
+        player.facing = "down"
+    if d:
+        player.vx = speed
+        player.facing = "right"
+    if a:
+        player.vx = -speed
+        player.facing = "left"
+    if not s and not w:
+        player.vy = 0
+    if not a and not d:
+        player.vx = 0    
+
+    if player.vx == 0 and player.vy == 0:
+        creatures.switch_anim(player,"standing")
+    else:
+        creatures.switch_anim(player,"walking")
+
+    if player.facing != oldfacing:
+        player.current_frame = 0
+    
+def gen_test_map():
+    game_map = [[0 for x in range(100)] for y in range(100)]
+    for x in range(1000):
+        game_map[randint(0,99)][randint(0,99)] = randint(0,7)
+    
+    for x in range(100):
+        game_map[0][x] = 16 * 6 + 2
+        game_map[len(game_map[0]) - 1][x] = 16 * 6 + 2
+    
+    
+    for y in range(100):
+        game_map[y][0] = 16 * 6 + 2
+        game_map[y][len(game_map) - 1] = 16 * 6 + 2
+        
+    
+    return game_map
 
 def main(screen):   
     clock = pygame.time.Clock()
@@ -20,7 +76,7 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
 
-    ts = display.load_tileset(pygame.image.load("cavetiles_01.png"), 32, 32)    
+    ts = display.load_tileset(pygame.image.load("tile sheet.png"), 32, 32)    
     
     panim = {
              "standing": {"up": ("dude", 64, 64, [0], 5),
@@ -33,9 +89,17 @@ def main(screen):
                         "right": ("dude", 64, 64, range(28, 36), 5)}}
 
     player = creatures.Sprite(400, 400, "player", panim)
-    enemy = creatures.Sprite(600, 600, "monk", panim) 
+    enemy = creatures.Sprite(600, 600, "monk", panim)
+    
+    #swidth = player.get_rect().width + 35
+    #smiddle = int(swidth / 2)
+    #shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    #
+    #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
+    game_map = dungeongen.make_dungeon(100)
 
-    game_map = gen_test_map()
         
     sprites = [player, enemy]
     
