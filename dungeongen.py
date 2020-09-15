@@ -5,8 +5,8 @@ import itertools
 def make_room(w,h, floor_tile=0, wall_tile=1):
     """Returns a list of lists of tile numbers"""
     results = []
-    top_tile = 0
-    top_corner = 3
+    top_tile = 6
+    top_corner = 1
     # Top row is always all 1s: 4 --> [1,1,1,1]
     top_row = [top_corner] + [top_tile for x in range(w - 2)] + [top_corner] #make_list_of_1s(w) 
     results.append(top_row)
@@ -123,14 +123,16 @@ def stamp_hallway(r1, r2, atype, m):
     d2 = get_door(r2, atype[1])
     if d1 == None or d2 == None:
         return
-    m[d1[1]][d1[0]] = 48
-    m[d2[1]][d2[0]] = 48
+    m[d1[1]][d1[0]] = 12 if randint(1, 5) == 1 else 2
+    m[d2[1]][d2[0]] = 12 if randint(1, 5) == 1 else 2
     dir = atype[0]
     cur_x, cur_y = change_d(dir, d1)
     end = change_d(atype[1], d2)
-    m[end[1]][end[0]] = 14
+    m[end[1]][end[0]] = 4
+    l = 0
     while True:
-        m[cur_y][cur_x] = 14
+        l += 1
+        m[cur_y][cur_x] = 4
         old_x = cur_x
         old_y = cur_y
         if randint(1,2) == 1   :
@@ -147,16 +149,18 @@ def stamp_hallway(r1, r2, atype, m):
                 cur_y -= 1
             else:
                 cur_y += randint(-1, 1)
+        if l == 100:
+            return
         if cur_x == end[0] and cur_y == end[1]:
             return
          
-        if m[cur_y][cur_x] not in [22, 14]:
+        if m[cur_y][cur_x] not in [3, 14]:
             cur_x = old_x
             cur_y = old_y
 
         
 def make_dungeon(size):
-    blank_tile = 22
+    blank_tile = 3
     dungeon = [[blank_tile for x in range(size)] for y in range(size)]
     rooms = bsp.make_bsp_rooms(size,size)
     pairs = get_pairs(rooms)
@@ -180,7 +184,7 @@ def make_dungeon(size):
         r.h -= 6
     
     for r in rooms:
-        stamp(r.x, r.y, make_room(r.w, r.h, 14, 2), dungeon)
+        stamp(r.x, r.y, make_room(r.w, r.h, 0, 6), dungeon)
        #stamp(r.x + 5, r.y + 5, make_room(r.w - 10, r.h - 10, 0, 98), dungeon)
     for p in pairs:
         room_pair, adj_data = p

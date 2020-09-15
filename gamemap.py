@@ -19,7 +19,3 @@ def walkable(mapx, mapy, m, ts):
         return ts.data[current_tile].walkable
     else:
         return True
-    
-
-    
-    
