@@ -32,6 +32,8 @@ class Sprite:
         self.alive = True
         self.hitpoints = 100
         self.hitbox = self.get_rect()
+        self.hitbox.x = 0
+        self.hitbox.y = 0
 
     def get_rect(self):
         if self.simple_img != None:
@@ -53,7 +55,6 @@ def switch_anim(s, anim_name):
         s.current_animation = anim_name
     else:
         s.next_anim = anim_name
-from tools import distance  
 
 def tick_anim(s):
     if s.anim_timer == None:
@@ -137,6 +138,7 @@ def attempt_walk(s, m, ts):
 
     hx = s.x + s.hitbox.x 
     hy = s.y + s.hitbox.y
+
     left = int(hx / world.TILE_WIDTH)
     right = int((hx + s.hitbox.width) / world.TILE_WIDTH)
     top = int(hy / world.TILE_WIDTH )
