@@ -63,6 +63,7 @@ def gen_test_map():
         
     
     return game_map
+   
 
 def main(screen):   
     clock = pygame.time.Clock()
@@ -84,8 +85,31 @@ def main(screen):
                         "left": ("dude", 64, 64, range(10, 18), 5),
                         "down": ("dude", 64, 64, range(19, 27), 5),
                         "right": ("dude", 64, 64, range(28, 36), 5)}}
+                        
+    
+                        
+    banim = { "walking": {"left": ("boganim", 105, 80, [0,1,2], 7),
+                          "right": ("boganim", 105, 80, [3,4,5], 7),
+                          #"up": ("boganim", 105, 80, [5], 7),
+                          "down": ("boganim", 105, 80, [5], 7)
+                         }
+            }
+            
+    puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
     player = creatures.Sprite(400, 400, "player", panim)
+    player.tick = creatures.tick_player
     enemy = creatures.Sprite(600, 600, "monk", panim)
+    borgalon = creatures.Sprite(500,500, "borgalon", banim)
+    puke = creatures.Sprite(350, 350, "puke", puke_anim)
+ 
+    
+    borgalon.vx = 1
+    borgalon.vy = 0
+    borgalon.facing = "right"
+    borgalon.mode = "chase"
+    borgalon.target = player
+    borgalon.tick = creatures.tick_borgalon
+    
     
     #swidth = player.get_rect().width + 35
     #smiddle = int(swidth / 2)
@@ -96,7 +120,7 @@ def main(screen):
     #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
     game_map = gen_test_map()
         
-    sprites = [player, enemy]
+    sprites = [player, enemy, borgalon, puke]
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
@@ -117,7 +141,9 @@ def main(screen):
         for s in sprites:
             creatures.tick_anim(s)
             if s.kind != "wall":
-                creatures.attempt_walk(s, game_map, ts)
+                if s.tick != None:
+                    s.tick(s, game_map, ts, sprites)
+                #creatures.attempt_walk(s, game_map, ts)
             
         #shield.x = player.x - 17
         #shield.y = player.y - 10
@@ -125,6 +151,7 @@ def main(screen):
         #shield.simple_img = render_shield(player_sx, player_sy, mouse_x, mouse_y, swidth)
         
         collisions.check_collisions(sprites)
+        sprites = list(filter(lambda s: s.alive, sprites))
             
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
