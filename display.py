@@ -5,6 +5,7 @@ import world
 from random import randint
 from functools import reduce
 from tools import first
+import math
 
 Tileset = namedtuple("Tileset", "image tile_width tile_height tiles_per_line rows data")
 
@@ -33,7 +34,10 @@ def load_tileset(tileset_img, tile_width, tile_height):
     tiles_per_line = int(img_width / tile_width)
     rows = int(img_height / tile_height)   
     
-    data = {98: tile(False)} 
+    data = {1: tile(False),
+            3: tile(False),
+            6: tile(False),
+            12: tile(False)} 
    
     return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows, data)
     
@@ -45,7 +49,7 @@ def hitbar(max,cur,screen):
 
 def draw_tile(screen, tileset, tile_number, x, y):
     tile_y = int(tile_number / tileset.tiles_per_line)
-    tile_x = int(tile_number / tileset.tiles_per_line)
+    tile_x = int(tile_number % tileset.tiles_per_line)
     
     tix = tile_x * tileset.tile_width
     tiy = tile_y * tileset.tile_width    
@@ -93,6 +97,8 @@ def render_sprite(screen, c_left, c_top, s):
             current_tile_number = aframes[0]
         tix, tiy = get_tile_coords(ts, current_tile_number) 
         screen.blit(img, (s.x - c_left, s.y - c_top), (tix, tiy, ts.tile_width, ts.tile_height))
+        hitbox_rect = pygame.Rect(s.x + s.hitbox.x - c_left, s.y + s.hitbox.y - c_top, s.hitbox.width, s.hitbox.height)
+        pygame.gfxdraw.rectangle(screen, hitbox_rect, (255,0,0))
                 
 def render_cam_sprites(screen, cam, sprites, ts, m):
     c_left, c_top = get_camera_game_coords(cam, m, ts)
@@ -182,6 +188,7 @@ def render_shield(player_sx, playersy, mouse_x, mouse_y, swidth):
     angle = (180 / math.pi) * math.atan2(rel_y, rel_x)
     shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     sangle = 90 / 2
+    smiddle = 100
     pygame.gfxdraw.arc(shield_surface, smiddle, smiddle, 45, 
                        int(angle - sangle), int(angle + sangle),
                        (255, 255, 255))  

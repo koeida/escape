@@ -1,13 +1,16 @@
+from gamemap import gen_test_map
+from input import get_input
+from random import randint
+import collisions
+import creatures
+import display
+import math
 import pygame
 import pygame.gfxdraw
-import traceback
-import display
-from random import randint
-import creatures
 import timers
+import traceback
 import world
-import collisions
-import math
+import dungeongen
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
@@ -74,7 +77,7 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
 
-    ts = display.load_tileset(pygame.image.load("cavetiles_01.png"), 32, 32)    
+    ts = display.load_tileset(pygame.image.load("tile sheet.png"), 32, 32)    
     
     panim = {
              "standing": {"up": ("dude", 64, 64, [0], 5),
@@ -98,6 +101,8 @@ def main(screen):
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
     player = creatures.Sprite(400, 400, "player", panim)
     player.tick = creatures.tick_player
+    player = creatures.Sprite(400, 400, "player", panim)
+    player.hitbox = pygame.Rect(24, 43, 18, 18)
     enemy = creatures.Sprite(600, 600, "monk", panim)
     borgalon = creatures.Sprite(500,500, "borgalon", banim)
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
@@ -118,13 +123,16 @@ def main(screen):
     #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
     #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
-    game_map = gen_test_map()
+    game_map = dungeongen.make_dungeon(100)
+
         
-    sprites = [player, enemy, borgalon, puke]
+
+    sprites = [player, borgalon]
+    
+
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
-    
     
     # Timer Example
     timers.add_timer(5, lambda: cam.set_shake(5))
@@ -135,8 +143,8 @@ def main(screen):
         timers.update_timers()
         
         mouse_x, mouse_y = pygame.mouse.get_pos()
+
         get_input(player, game_map, ts)       
-        
         
         for s in sprites:
             creatures.tick_anim(s)
@@ -148,7 +156,7 @@ def main(screen):
         #shield.x = player.x - 17
         #shield.y = player.y - 10
         #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
-        #shield.simple_img = render_shield(player_sx, player_sy, mouse_x, mouse_y, swidth)
+        #shield.simple_img = render_shield(player_sx, player_sy, mouse_x, mouse_y, swidth)       
         
         collisions.check_collisions(sprites)
         sprites = list(filter(lambda s: s.alive, sprites))

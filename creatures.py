@@ -4,8 +4,9 @@ import display
 import pygame
 from tools import distance
 from random import randint, uniform
+import collisions
 
-class Animation:
+class Animation: 
     def __init__(self, name, anim_db):
         self.name = name
         self.anim_db = anim_db
@@ -30,6 +31,8 @@ class Sprite:
         self.tick = generic_tick
         self.alive = True
         self.hitpoints = 100
+        self.hitbox = self.get_rect()
+
     def get_rect(self):
         if self.simple_img != None:
             return self.simple_img.get_rect()
@@ -128,19 +131,45 @@ def tick_borgalon(borgalon, m, ts, sprites):
 def attempt_walk(s, m, ts):
     s.last_x = s.x
     s.last_y = s.y
+
+    s.x += s.vx
+    s.y += s.vy
+
+    hx = s.x + s.hitbox.x 
+    hy = s.y + s.hitbox.y
+    left = int(hx / world.TILE_WIDTH)
+    right = int((hx + s.hitbox.width) / world.TILE_WIDTH)
+    top = int(hy / world.TILE_WIDTH )
+    bottom = int((hy + s.hitbox.height) / world.TILE_WIDTH )
+    coords = [(left, top), (left, bottom), (right, top), (right, bottom)]
+
+    collision = False
+    for tx, ty in coords:
+        if not walkable(tx, ty, m, ts):
+            print("ow: (%d, %d)" % (tx, ty)) 
+            collision = True  
+
+    if collision:
+        s.x = s.last_x
+        s.y = s.last_y
+        return
+
+        
     
-    new_x = s.x + s.vx
-    new_y = s.y + s.vy
+
+def make_shield():
+    #swidth = player.get_rect().width + 100 #35
+    #smiddle = int(swidth / 2)
+    #shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     
-    sw = s.get_rect().width
-    sh = s.get_rect().height
-    
-    xtl, ytl = get_map_coords(new_x, new_y, world.TILE_WIDTH, world.TILE_HEIGHT)
-    xtr, ytr = get_map_coords(new_x + sw, new_y, world.TILE_WIDTH, world.TILE_HEIGHT)
-    xbl, ybl = get_map_coords(new_x, new_y + sh, world.TILE_WIDTH, world.TILE_HEIGHT)
-    xbr, ybr = get_map_coords(new_x + sw, new_y + sh, world.TILE_WIDTH, world.TILE_HEIGHT)
-    if (walkable(xtl, xtl, m, ts) and walkable(xbl, ybl, m, ts) and 
-        walkable(xtr, ytr, m, ts) and walkable(xbr, ybr, m, ts)):
-        s.x = new_x
-        s.y = new_y
-    
+    #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
+    pass
+
+def tick_shield():
+    #shield.x = player.x - 65
+    #shield.y = player.y - 65
+    #player_sx, player_sy = #display.calc_screen_coords(coords, camrect)
+    #shield.simple_img = display.render_shield(0, 0, mouse_x, mouse_y, swidth)
+    pass
