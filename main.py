@@ -1,6 +1,7 @@
 from gamemap import gen_test_map
 from input import get_input
 from random import randint
+from tools import get_coords
 import collisions
 import creatures
 import display
@@ -78,9 +79,10 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
 
+
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
-    ts = display.load_tileset(tsimg, 32, 32)    
+    ts = display.load_tileset(tsimg, 32, 32)
     
     panim = {
              "standing": {"up": ("dude", 64, 64, [0], 5),
@@ -105,20 +107,24 @@ def main(screen):
     player = creatures.Sprite(400, 400, "player", panim)
     player.tick = creatures.tick_player
     player = creatures.Sprite(400, 400, "player", panim)
+    creatures.randomspawn(player,game_map)
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     enemy = creatures.Sprite(600, 600, "monk", panim)
-    borgalon = creatures.Sprite(500,500, "borgalon", banim)
+    
+    sprites = [player]
+    
+    for x in range(20):
+        borgalon = creatures.Sprite(500,500, "borgalon", banim)
+        creatures.randomspawn(borgalon,game_map)
+        borgalon.vx = 1
+        borgalon.vy = 0
+        borgalon.facing = "right"
+        borgalon.mode = "chase"
+        borgalon.target = player
+        borgalon.tick = creatures.tick_borgalon
+        sprites.append(borgalon)
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
- 
-    
-    borgalon.vx = 1
-    borgalon.vy = 0
-    borgalon.facing = "right"
-    borgalon.mode = "chase"
-    borgalon.target = player
-    borgalon.tick = creatures.tick_borgalon
-    
-    
+
     swidth = player.get_rect().width + 35
     smiddle = int(swidth / 2)
     shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
@@ -131,8 +137,6 @@ def main(screen):
         
 
     sprites = [player, borgalon, shield]
-    
-
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)

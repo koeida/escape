@@ -12,6 +12,14 @@ def first(f,l):
         if f(x):
             return x
     return None
+   
+def get_coords(m, needle):
+    results = [] # end up with something like: [(0,10), (10, 20), (25, 10)]
+    for y in range(len(m)):
+        for x in range(len(m[0])):
+            if m[y][x] == needle:
+                results.append((x,y))
+    return results 
 
 def clamp(v, minv, maxv):
     if v > maxv:
@@ -20,3 +28,4 @@ def clamp(v, minv, maxv):
         return minv
     else:
         return v
+
