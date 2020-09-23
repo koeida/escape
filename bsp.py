@@ -69,3 +69,27 @@ def make_bsp_rooms(width, height):
     rooms = list(map(lambda r: r.name, rooms))
     return rooms
 
+def make_zones(width, height):
+    head = Node(Area(0,0,width, height,"vert"))
+    split_area(head, 0)
+    return head
+
+def branches_at_depth(head, depth):
+    if depth == 1:
+        results = []
+        for node in head.children:
+            if node != None:
+                results.append(node)
+        return results
+    else:
+        results = []
+        for node in head.children:
+            results += branches_at_depth(node, depth - 1)
+        return results
+
+#z = make_zones(250,250)
+#print_tree(z)
+#zones = branches_at_depth(z, 3)
+#for z2 in zones:
+#    print_tree(z2)
+#print(rooms)

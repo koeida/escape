@@ -12,3 +12,11 @@ def first(f,l):
         if f(x):
             return x
     return None
+
+def clamp(v, minv, maxv):
+    if v > maxv:
+        return maxv
+    elif v < minv:
+        return minv
+    else:
+        return v

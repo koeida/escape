@@ -11,6 +11,7 @@ import timers
 import traceback
 import world
 import dungeongen
+from pygame.locals import *
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
@@ -77,17 +78,19 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
 
-    ts = display.load_tileset(pygame.image.load("tile sheet.png"), 32, 32)    
+    tsimg = pygame.image.load("tile sheet.png")
+    tsimg.convert()
+    ts = display.load_tileset(tsimg, 32, 32)    
     
     panim = {
              "standing": {"up": ("dude", 64, 64, [0], 5),
                          "left": ("dude", 64, 64, [9], 5),
                          "down": ("dude", 64, 64, [18], 5),
                          "right": ("dude", 64, 64, [29], 5)},
-             "walking": {"up": ("dude", 64, 64, range(1,9), 5),
-                        "left": ("dude", 64, 64, range(10, 18), 5),
-                        "down": ("dude", 64, 64, range(19, 27), 5),
-                        "right": ("dude", 64, 64, range(28, 36), 5)}}
+             "walking": {"up": ("dude", 64, 64, range(1,9), 2),
+                        "left": ("dude", 64, 64, range(10, 18), 2),
+                        "down": ("dude", 64, 64, range(19, 27), 2),
+                        "right": ("dude", 64, 64, range(28, 36), 2)}}
                         
     
                         
@@ -116,18 +119,18 @@ def main(screen):
     borgalon.tick = creatures.tick_borgalon
     
     
-    #swidth = player.get_rect().width + 35
-    #smiddle = int(swidth / 2)
-    #shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    #
-    #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
-    #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
+    swidth = player.get_rect().width + 35
+    smiddle = int(swidth / 2)
+    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    
+    shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
     game_map = dungeongen.make_dungeon(100)
 
         
 
-    sprites = [player, borgalon]
+    sprites = [player, borgalon, shield]
     
 
     
@@ -153,10 +156,10 @@ def main(screen):
                     s.tick(s, game_map, ts, sprites)
                 #creatures.attempt_walk(s, game_map, ts)
             
-        #shield.x = player.x - 17
-        #shield.y = player.y - 10
+        shield.x = player.x - 17
+        shield.y = player.y - 10
         #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
-        #shield.simple_img = render_shield(player_sx, player_sy, mouse_x, mouse_y, swidth)       
+        shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
         
         collisions.check_collisions(sprites)
         sprites = list(filter(lambda s: s.alive, sprites))
@@ -175,7 +178,8 @@ def main(screen):
 
         
 pygame.init()
-screen = pygame.display.set_mode((800, 600))
+flags = DOUBLEBUF
+screen = pygame.display.set_mode((800, 600), flags)
 try:
     main(screen)
 except Exception as e:

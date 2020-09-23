@@ -2,7 +2,7 @@ from gamemap import get_map_coords, onscreen, walkable
 import world
 import display
 import pygame
-from tools import distance
+from tools import distance, clamp
 from random import randint, uniform
 import collisions
 
@@ -34,6 +34,7 @@ class Sprite:
         self.hitbox = self.get_rect()
         self.hitbox.x = 0
         self.hitbox.y = 0
+        self.deflected_timer = 0
 
     def get_rect(self):
         if self.simple_img != None:
@@ -44,6 +45,14 @@ class Sprite:
             ts = display.load_tileset(img, width, height)
             result = pygame.Rect(self.x, self.y, width, height)
             return result 
+    def get_img(self):
+        if self.simple_img != None:
+            return self.simple_img
+        else:
+            aname, width, height, aframes, adelay = self.animations[self.current_animation][self.facing]
+            img = world.image_db[aname]
+            return img 
+
             
 def switch_anim(s, anim_name):
     if s.current_animation == anim_name:
@@ -72,18 +81,26 @@ def generic_tick(p, m, ts, sprites):
     attempt_walk(p,m,ts)
     
 def tick_puke(p, m, ts, sprites):
-    if p.target.x > p.x:
-        p.vx += 0.1
-    if p.target.x < p.x:
-        p.vx -= 0.1
-    if p.target.y > p.y:
-        p.vy += 0.1
-        #p.facing ="down"
-    if p.target.y < p.y:
-        p.vy -=0.1
-        #p.facing ="up"
+    if p.deflected_timer > 0:
+        p.deflected_timer -= 1
+    else:
+        if p.target.x > p.x:
+            p.vx += 0.1
+        if p.target.x < p.x:
+            p.vx -= 0.1
+        if p.target.y > p.y:
+            p.vy += 0.1
+            #p.facing ="down"
+        if p.target.y < p.y:
+            p.vy -=0.1
+            #p.facing ="up"
+        max_vel = 4
+        min_vel = -4
+        p.vy = clamp(p.vy, min_vel, max_vel)
+        p.vx = clamp(p.vx, min_vel, max_vel)
     attempt_walk(p,m,ts)
     p.lifespan -= 1
+
     if p.lifespan < 0:
         p.alive = False
             
@@ -148,7 +165,6 @@ def attempt_walk(s, m, ts):
     collision = False
     for tx, ty in coords:
         if not walkable(tx, ty, m, ts):
-            print("ow: (%d, %d)" % (tx, ty)) 
             collision = True  
 
     if collision:
