@@ -11,12 +11,8 @@ def deflect(s1, s2):
     if s2.deflected_timer == 0:
         s2.x = s2.last_x
         s2.y = s2.last_y    
-        s2.vy *= -2
-        s2.vx *= -2
-        s2.deflected_timer = 20
-
-
-def puke_hit(s1,s2):
+        s2.vy *= -1.25
+        s2.vx *= -1.25
     s1.hitpoints -= 1
     if s1.hitpoints == 0:
         s1.alive = False
