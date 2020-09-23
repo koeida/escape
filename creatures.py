@@ -2,8 +2,8 @@ from gamemap import get_map_coords, onscreen, walkable
 import world
 import display
 import pygame
-from tools import distance
-from random import randint, uniform
+from tools import distance,get_coords
+from random import randint, uniform,choice
 import collisions
 
 class Animation: 
@@ -68,6 +68,13 @@ def tick_anim(s):
             s.current_animation = s.next_anim
             s.next_anim = None
             
+def randomspawn(s, m):
+    spawnpoints = get_coords(m,0)
+    spawn_x, spawn_y = choice(spawnpoints)
+    s.x = spawn_x * 32
+    s.y = spawn_y * 32
+    
+            
 def generic_tick(p, m, ts, sprites):
     attempt_walk(p,m,ts)
     
@@ -98,15 +105,15 @@ def tick_borgalon(borgalon, m, ts, sprites):
         if borgalon.target.x < borgalon.x:
             borgalon.vx = -1
             borgalon.facing ="left"
-        if borgalon.target.y > borgalon.y+200:
+        if borgalon.target.y > borgalon.y:
             borgalon.vy = 1
             #borgalon.facing ="down"
-        if borgalon.target.y < borgalon.y+200:
+        if borgalon.target.y < borgalon.y:
             borgalon.vy = -1
             #borgalon.facing ="up"
         attempt_walk(borgalon, m, ts)
         
-        if borgalon.x == borgalon.target.x and borgalon.y+200 == borgalon.target.y:
+        if distance(borgalon,borgalon.target) <= 200:
             borgalon.mode = "attack"
             borgalon.vx = 0
             borgalon.vy = 0
@@ -121,6 +128,8 @@ def tick_borgalon(borgalon, m, ts, sprites):
             puke.lifespan = randint(50,250)
             puke.tick = tick_puke
             sprites.append(puke)
+        if distance(borgalon,borgalon.target) >=500:
+            borgalon.mode = "chase"
         #borgalon.facing = "down"
     #if distance(borgalon,borgalon.target) < 300:
     #    borgalon.targeszt = borgalon.target.y - 100
@@ -148,7 +157,6 @@ def attempt_walk(s, m, ts):
     collision = False
     for tx, ty in coords:
         if not walkable(tx, ty, m, ts):
-            print("ow: (%d, %d)" % (tx, ty)) 
             collision = True  
 
     if collision:

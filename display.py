@@ -98,7 +98,7 @@ def render_sprite(screen, c_left, c_top, s):
         tix, tiy = get_tile_coords(ts, current_tile_number) 
         screen.blit(img, (s.x - c_left, s.y - c_top), (tix, tiy, ts.tile_width, ts.tile_height))
         hitbox_rect = pygame.Rect(s.x + s.hitbox.x - c_left, s.y + s.hitbox.y - c_top, s.hitbox.width, s.hitbox.height)
-        pygame.gfxdraw.rectangle(screen, hitbox_rect, (255,0,0))
+        #pygame.gfxdraw.rectangle(screen, hitbox_rect, (255,0,0))
                 
 def render_cam_sprites(screen, cam, sprites, ts, m):
     c_left, c_top = get_camera_game_coords(cam, m, ts)
