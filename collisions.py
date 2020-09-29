@@ -5,7 +5,10 @@ def keep_separated(s1, s2):
     s1.x = s1.last_x
     s1.y = s1.last_y
     s2.x = s2.last_x
-    s2.y = s2.last_y    
+    s2.y = s2.last_y
+
+def puke_hit(s1,s2):
+    s1.alive = False    
 
 def deflect(s1, s2):
     if s2.deflected_timer == 0:

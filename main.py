@@ -79,6 +79,8 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
     
+    game_map = dungeongen.make_dungeon(500)
+    
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
     ts = display.load_tileset(tsimg, 32, 32)        
@@ -131,7 +133,7 @@ def main(screen):
     shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
     border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
-    game_map = dungeongen.make_dungeon(100)
+    
 
 
         
