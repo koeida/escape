@@ -162,20 +162,15 @@ def stamp_hallway(r1, r2, atype, m):
 def make_dungeon(size):
     blank_tile = 3
     dungeon = [[blank_tile for x in range(size)] for y in range(size)]
-    rooms = bsp.make_bsp_rooms(size,size)
-    pairs = get_pairs(rooms)
+    zones = bsp.make_bsp_rooms(size,size)
+    for z in zones:
+        make_zone(z, dungeon)
+    return dungeon
     
-    #roompair, atype = pairs[0]
-    # r1, r2 = roompair
-    # atype = atype[1]
-    # print(r1)
-    # print(r2)
-    # print(atype)
-    #print(atype[1])
-        
-    #print(r)
-    #print(get_door(r, "r"))
-
+    
+    
+def make_zone(rooms, dungeon):
+    pairs = get_pairs(rooms)
     
     for r in rooms:
         r.x += 3

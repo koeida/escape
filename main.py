@@ -11,10 +11,11 @@ import timers
 import traceback
 import world
 import dungeongen
+from pygame.locals import *
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
-    speed = 4
+    speed = 8
     dx = 0
     dy = 0
     
@@ -75,18 +76,20 @@ def main(screen):
 
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
-
-    ts = display.load_tileset(pygame.image.load("tile sheet.png"), 32, 32)    
+    
+    tsimg = pygame.image.load("tile sheet.png")
+    tsimg.convert()
+    ts = display.load_tileset(tsimg, 32, 32)    
     
     panim = {
              "standing": {"up": ("dude", 64, 64, [0], 5),
                          "left": ("dude", 64, 64, [9], 5),
                          "down": ("dude", 64, 64, [18], 5),
                          "right": ("dude", 64, 64, [29], 5)},
-             "walking": {"up": ("dude", 64, 64, range(1,9), 5),
-                        "left": ("dude", 64, 64, range(10, 18), 5),
-                        "down": ("dude", 64, 64, range(19, 27), 5),
-                        "right": ("dude", 64, 64, range(28, 36), 5)}}
+             "walking": {"up": ("dude", 64, 64, range(1,9), 2),
+                        "left": ("dude", 64, 64, range(10, 18), 2),
+                        "down": ("dude", 64, 64, range(19, 27), 2),
+                        "right": ("dude", 64, 64, range(28, 36), 2)}}
 
     player = creatures.Sprite(400, 400, "player", panim)
     player.hitbox = pygame.Rect(24, 43, 18, 18)
@@ -99,7 +102,7 @@ def main(screen):
     #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
     #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
-    game_map = dungeongen.make_dungeon(100)
+    game_map = dungeongen.make_dungeon(500)
 
         
     sprites = [player]
@@ -139,7 +142,8 @@ def main(screen):
 
         
 pygame.init()
-screen = pygame.display.set_mode((800, 600))
+flags = DOUBLEBUF
+screen = pygame.display.set_mode((800, 600), flags)
 try:
     main(screen)
 except Exception as e:

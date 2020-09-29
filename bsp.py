@@ -31,7 +31,7 @@ def split_horiz(p, min_size):
     a2 = Area(p.x + width, p.y, p.w - width, p.h, "horiz")
     return (a1,a2)
 
-def split_area(a, cur_depth, max_depth=7, min_size=26):
+def split_area(a, cur_depth, max_depth=11, min_size=20):
     p = a.name # p == parent
     if randint(0,5) == 0 and cur_depth > 3:
         return None
@@ -61,11 +61,28 @@ def get_leaves(h):
     get_leaves_internal(h)
     return results
     
+def get_branches(head, depth):
+    results = []
+    if depth == 2:
+        for node in head.children:
+            if node != None:
+                results.append(node)
+    else:
+        for node in head.children:
+            results += get_branches(node, depth - 1)
+    return results
+    
+    
 def make_bsp_rooms(width, height):    
     head = Node(Area(0,0,width, height,"vert"))
     split_area(head, 0)
-
-    rooms = get_leaves(head)
-    rooms = list(map(lambda r: r.name, rooms))
-    return rooms
-
+    zones = get_branches(head, 7)
+    zones = list(map(get_leaves, zones))
+    for x in range(len(zones)):
+        zones[x] = list(map(lambda r: r.name, zones[x]))
+    
+    # rooms = get_leaves(branch)
+    # rooms = list(map(lambda r: r.name, rooms))
+    # #print_tree(branch)
+    # print(branch)
+    return zones
