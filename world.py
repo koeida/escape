@@ -5,7 +5,9 @@ TILE_HEIGHT = 32
 FPS = 60
 
 image_db = ["BODY_male.png",
-            "LEGS_robe_skirt.png"]
+            "LEGS_robe_skirt.png",
+            "boganim.png",
+            "puke.png"]
     
 def load_assets():
     global image_db

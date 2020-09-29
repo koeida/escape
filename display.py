@@ -4,6 +4,7 @@ from gamemap import get_map_coords
 import world
 from random import randint
 from functools import reduce
+from tools import first
 import math
 
 Tileset = namedtuple("Tileset", "image tile_width tile_height tiles_per_line rows data")
@@ -39,6 +40,12 @@ def load_tileset(tileset_img, tile_width, tile_height):
             12: tile(False)} 
    
     return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows, data)
+    
+def hitbar(max,cur,screen):
+    screen.fill((20,20,20),(35,35,max,30))
+    screen.fill((0,150,30),(35,35,cur,30))
+    
+    
 
 def draw_tile(screen, tileset, tile_number, x, y):
     tile_y = int(tile_number / tileset.tiles_per_line)
@@ -84,11 +91,14 @@ def render_sprite(screen, c_left, c_top, s):
         aname, width, height, aframes, adelay = s.animations[s.current_animation][s.facing]
         img = world.image_db[aname]
         ts = load_tileset(img, width, height)
-        current_tile_number = aframes[s.current_frame]
+        try:
+            current_tile_number = aframes[s.current_frame]
+        except:
+            current_tile_number = aframes[0]
         tix, tiy = get_tile_coords(ts, current_tile_number) 
         screen.blit(img, (s.x - c_left, s.y - c_top), (tix, tiy, ts.tile_width, ts.tile_height))
         hitbox_rect = pygame.Rect(s.x + s.hitbox.x - c_left, s.y + s.hitbox.y - c_top, s.hitbox.width, s.hitbox.height)
-        pygame.gfxdraw.rectangle(screen, hitbox_rect, (255,0,0))
+        #pygame.gfxdraw.rectangle(screen, hitbox_rect, (255,0,0))
                 
 def render_cam_sprites(screen, cam, sprites, ts, m):
     c_left, c_top = get_camera_game_coords(cam, m, ts)
@@ -154,6 +164,8 @@ def draw_interface(screen, cam, ts, game_map, sprites):
     # Draw the camera
     cam_surface = render_camera(cam, ts, game_map, sprites)
     screen.blit(cam_surface, (cam.x, cam.y))
+    player = first(lambda s: s.kind =="player",sprites) 
+    hitbar(100,player.hitpoints,screen)
     # TASK: Maybe draw a pretty border around the camera, I dunno
     # TASK: Draw player stats
     # TASK: Draw inventory? 
@@ -168,7 +180,7 @@ def calc_screen_coords(game_coords, camrect, cam, m, ts):
     #meh
     
     
-def render_shield(player_sx, playersy, mouse_x, mouse_y, swidth):
+def render_shield(mouse_x, mouse_y, swidth):
     cam_size = 32*9
     cam_pos = 50
     rel_x, rel_y = mouse_x - cam_pos - cam_size, mouse_y - cam_pos - cam_size
@@ -176,7 +188,7 @@ def render_shield(player_sx, playersy, mouse_x, mouse_y, swidth):
     angle = (180 / math.pi) * math.atan2(rel_y, rel_x)
     shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     sangle = 90 / 2
-    smiddle = 100
+    smiddle = 50
     pygame.gfxdraw.arc(shield_surface, smiddle, smiddle, 45, 
                        int(angle - sangle), int(angle + sangle),
                        (255, 255, 255))  
