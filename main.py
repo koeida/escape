@@ -167,6 +167,10 @@ def main(screen):
         #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
         shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
         
+        if player.hitpoints <= 0:
+            player.alive = False
+            shield.alive = False
+        
         collisions.check_collisions(sprites)
         sprites = list(filter(lambda s: s.alive, sprites))
             

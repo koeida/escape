@@ -8,8 +8,8 @@ def keep_separated(s1, s2):
     s2.y = s2.last_y
 
 def puke_hit(s1,s2):
-    s1.alive = False    
-
+    s2.alive = False    
+    s1.hitpoints -= 2
 def deflect(s1, s2):
     if s2.deflected_timer == 0:
         s2.x = s2.last_x
