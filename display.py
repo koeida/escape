@@ -164,8 +164,9 @@ def draw_interface(screen, cam, ts, game_map, sprites):
     # Draw the camera
     cam_surface = render_camera(cam, ts, game_map, sprites)
     screen.blit(cam_surface, (cam.x, cam.y))
-    player = first(lambda s: s.kind =="player",sprites) 
-    hitbar(100,player.hitpoints,screen)
+    player = first(lambda s: s.kind == "player", sprites) 
+    if player != None:
+        hitbar(100, player.hitpoints,screen)
     # TASK: Maybe draw a pretty border around the camera, I dunno
     # TASK: Draw player stats
     # TASK: Draw inventory? 

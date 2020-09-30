@@ -107,14 +107,14 @@ def main(screen):
 
     player = creatures.Sprite(400, 400, "player", panim)
     player.tick = creatures.tick_player
-    player = creatures.Sprite(400, 400, "player", panim)
     creatures.randomspawn(player,game_map)
     player.hitbox = pygame.Rect(24, 43, 18, 18)
+    player.hitpoints = 100
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
     sprites = [player]
     
-    for x in range(20):
+    for x in range(80):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map)
         borgalon.vx = 1
