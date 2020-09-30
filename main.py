@@ -134,11 +134,11 @@ def main(screen):
     border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
     
+    sprites.append(shield)
 
 
         
 
-    sprites = [player, borgalon, shield]
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
