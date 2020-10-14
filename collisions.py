@@ -6,6 +6,11 @@ def keep_separated(s1, s2):
     s1.y = s1.last_y
     s2.x = s2.last_x
     s2.y = s2.last_y    
+    
+def puke_hit(s1,s2):
+    s1.hitpoints -= 1
+    s2.alive = False
+    
 
 def deflect(s1, s2):
     if s2.deflected_timer == 0:
@@ -13,10 +18,7 @@ def deflect(s1, s2):
         s2.y = s2.last_y    
         s2.vy *= -1.25
         s2.vx *= -1.25
-    s1.hitpoints -= 1
-    if s1.hitpoints == 0:
-        s1.alive = False
-    s2.alive = False
+    
     
 def shrinkyrect(r, percent):
     shrunkwidth = (r.width/100) * percent
@@ -53,4 +55,5 @@ def check_collisions(sprites):
 collision_db = {("player", "monk"): keep_separated,
                 ("player", "puke"): puke_hit,
                 ("shield", "puke"): deflect,
+                ("shield", "borgalon"): deflect,
                 ("player", "wall"): keep_separated}

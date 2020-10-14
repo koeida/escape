@@ -136,14 +136,20 @@ def tick_borgalon(borgalon, m, ts, sprites):
             borgalon.mode = "attack"
             borgalon.vx = 0
             borgalon.vy = 0
-        
+        if distance(borgalon,borgalon.target) >= 1000:
+            borgalon.mode = "cheel"
+            
+    if borgalon.mode == "cheel":
+        if distance(borgalon,borgalon.target) <=500:
+            borgalon.mode = "chase"
+            
     if borgalon.mode == "attack":
-        if randint(1,5) == 1:
+        if randint(1,10) == 1:
             puke_anim = { "walking": {"down": ("puke", 20, 20, [0, 1], 3)}}
             puke = Sprite(borgalon.x, borgalon.y, "puke", puke_anim)
             puke.target = borgalon.target
             puke.vy = 3
-            puke.vx = uniform(-3, 3)
+            puke.vx = uniform(-5, 5)
             puke.lifespan = randint(50,250)
             puke.tick = tick_puke
             sprites.append(puke)

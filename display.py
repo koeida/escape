@@ -112,6 +112,17 @@ def render_cam_sprites(screen, cam, sprites, ts, m):
             render_sprite(screen, c_left, c_top, s)
                 
     return screen
+    
+def render_cam_particles(screen, cam, ps, ts, m,sprites):
+    c_left, c_top = get_camera_game_coords(cam, m, ts)
+    for p in ps:
+        on_x = p.x >= c_left and p.x < c_left + cam.width
+        on_y = p.y >= c_top and p.y < c_top + cam.height
+        if on_x and on_y:
+            screen.fill(p.color, (p.x - c_left, p.y - c_top, 1,1))
+            
+                
+    return screen
         
         
 """ Returns the absolute x/y coordinates of the camera's left(x) and top(y) pixels """
@@ -155,14 +166,15 @@ def render_camera_tiles(camera, ts, m):
     
     return clip_tiles(result, c_left, c_top, ts, camera)
 
-def render_camera(camera, ts, m, sprites):
+def render_camera(camera, ts, m, sprites, ps):
     result = render_camera_tiles(camera, ts, m)
     result = render_cam_sprites(result, camera, sprites, ts, m)
+    result = render_cam_particles(result, camera, ps, ts, m,sprites)
     return result
     
-def draw_interface(screen, cam, ts, game_map, sprites):
+def draw_interface(screen, cam, ts, game_map, sprites,particles):
     # Draw the camera
-    cam_surface = render_camera(cam, ts, game_map, sprites)
+    cam_surface = render_camera(cam,  ts, game_map, sprites, particles)
     screen.blit(cam_surface, (cam.x, cam.y))
     player = first(lambda s: s.kind =="player",sprites) 
     hitbar(100,player.hitpoints,screen)
