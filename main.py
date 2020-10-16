@@ -80,7 +80,7 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
     
-    game_map = dungeongen.make_dungeon(500)
+    game_map = dungeongen.make_dungeon(1000)
     
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
@@ -104,12 +104,14 @@ def main(screen):
                          }
             }
     
-    game_map = dungeongen.make_dungeon(100)
+    game_map = dungeongen.make_dungeon(500)
     
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
 
     player = creatures.Sprite(400, 400, "player", panim)
     player.tick = creatures.tick_player
+    #player.x = 1000
+    #player.y = 1000
     creatures.randomspawn(player,game_map)
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     player.hitpoints = 100
@@ -132,7 +134,7 @@ def main(screen):
     sprites = [player, shield]
     particles = []
     
-    for x in range(80):
+    for x in range(50):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map)
         borgalon.vx = 1

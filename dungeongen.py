@@ -180,18 +180,11 @@ def make_zone(rooms, dungeon):
     
     for r in rooms:
         stamp(r.x, r.y, make_room(r.w, r.h, 0, 6), dungeon)
-       #stamp(r.x + 5, r.y + 5, make_room(r.w - 10, r.h - 10, 0, 98), dungeon)
     for p in pairs:
         room_pair, adj_data = p
         r1, r2 = room_pair
-        # print(r1)
-        # print(r2)        
-        # print(adj_data)
-        # exit()
         
         stamp_hallway(r1, r2, adj_data[1], dungeon)
-    
-    
             
     return dungeon
 

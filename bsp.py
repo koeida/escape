@@ -81,7 +81,7 @@ def make_bsp_rooms(width, height):
     for x in range(len(zones)):
         zones[x] = list(map(lambda r: r.name, zones[x]))
     
-    # rooms = get_leaves(branch)
+    #rooms = get_leaves(branch)
     # rooms = list(map(lambda r: r.name, rooms))
     # #print_tree(branch)
     # print(branch)
