@@ -1,6 +1,6 @@
 from gamemap import gen_test_map
 from input import get_input
-from random import randint
+from random import randint, uniform
 from tools import get_coords
 import collisions
 import creatures
@@ -12,6 +12,7 @@ import timers
 import traceback
 import world
 import dungeongen
+import particles as part
 from pygame.locals import *
     
 def get_input(player, m, ts):
@@ -102,7 +103,9 @@ def main(screen):
                           "down": ("boganim", 105, 80, [5], 7)
                          }
             }
-            
+    
+    game_map = dungeongen.make_dungeon(100)
+    
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
 
     player = creatures.Sprite(400, 400, "player", panim)
@@ -112,7 +115,22 @@ def main(screen):
     player.hitpoints = 100
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
-    sprites = [player]
+    
+    
+    
+    swidth = player.get_rect().width + 35
+    smiddle = int(swidth / 2)
+    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    
+    shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
+    
+
+        
+
+    sprites = [player, shield]
+    particles = []
     
     for x in range(80):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
@@ -126,19 +144,12 @@ def main(screen):
         sprites.append(borgalon)
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
 
-    swidth = player.get_rect().width + 35
-    smiddle = int(swidth / 2)
-    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     
     shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
     border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
     
     sprites.append(shield)
-
-
-        
-
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
@@ -152,7 +163,8 @@ def main(screen):
         timers.update_timers()
         
         mouse_x, mouse_y = pygame.mouse.get_pos()
-
+        
+          
         get_input(player, game_map, ts)       
         
         for s in sprites:
@@ -160,7 +172,11 @@ def main(screen):
             if s.kind != "wall":
                 if s.tick != None:
                     s.tick(s, game_map, ts, sprites)
-                #creatures.attempt_walk(s, game_map, ts)
+                #creaures.attempt_walk(s, game_map, ts)
+        for p in particles:
+            part.tick_particle(p)
+            if p.lifespan <= 0:
+                particles.remove(p)
             
         shield.x = player.x - 17
         shield.y = player.y - 10
@@ -171,6 +187,8 @@ def main(screen):
         sprites = list(filter(lambda s: s.alive, sprites))
             
         for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                part.crazy_splatter(particles, player.x + 50, player.y + 50, (255,0,0))
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
@@ -178,7 +196,7 @@ def main(screen):
                     running = False
                 
         screen.fill((0,0,0))        
-        display.draw_interface(screen, cam, ts, game_map, sprites)
+        display.draw_interface(screen, cam, ts, game_map, sprites,particles)
         
         pygame.display.flip()
 
