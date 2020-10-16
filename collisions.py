@@ -1,5 +1,7 @@
 import pygame
 from itertools import combinations
+import particles as part
+from random import randint
 
 def keep_separated(s1, s2):
     s1.x = s1.last_x
@@ -10,6 +12,7 @@ def keep_separated(s1, s2):
 def puke_hit(s1,s2):
     s1.hitpoints -= 1
     s2.alive = False
+    part.crazy_splatter(s2.x,s2.y,(111,127,0),randint(20,100))
     
 def deflect(s1, s2):
     if s2.deflected_timer == 0:

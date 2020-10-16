@@ -7,6 +7,8 @@ from functools import reduce
 from tools import first
 import math
 
+import particles as part
+
 Tileset = namedtuple("Tileset", "image tile_width tile_height tiles_per_line rows data")
 
 class Camera:
@@ -113,13 +115,13 @@ def render_cam_sprites(screen, cam, sprites, ts, m):
                 
     return screen
     
-def render_cam_particles(screen, cam, ps, ts, m,sprites):
+def render_cam_particles(screen, cam, ts, m,sprites):
     c_left, c_top = get_camera_game_coords(cam, m, ts)
-    for p in ps:
+    for p in part.particles:
         on_x = p.x >= c_left and p.x < c_left + cam.width
         on_y = p.y >= c_top and p.y < c_top + cam.height
         if on_x and on_y:
-            screen.fill(p.color, (p.x - c_left, p.y - c_top, 1,1))
+            screen.fill(p.color, (p.x - c_left, p.y - c_top, p.size,p.size))
             
                 
     return screen
@@ -166,15 +168,15 @@ def render_camera_tiles(camera, ts, m):
     
     return clip_tiles(result, c_left, c_top, ts, camera)
 
-def render_camera(camera, ts, m, sprites, ps):
+def render_camera(camera, ts, m, sprites):
     result = render_camera_tiles(camera, ts, m)
     result = render_cam_sprites(result, camera, sprites, ts, m)
-    result = render_cam_particles(result, camera, ps, ts, m,sprites)
+    result = render_cam_particles(result, camera, ts, m,sprites)
     return result
     
-def draw_interface(screen, cam, ts, game_map, sprites,particles):
+def draw_interface(screen, cam, ts, game_map, sprites):
     # Draw the camera
-    cam_surface = render_camera(cam,  ts, game_map, sprites, particles)
+    cam_surface = render_camera(cam,  ts, game_map, sprites)
     screen.blit(cam_surface, (cam.x, cam.y))
     player = first(lambda s: s.kind == "player", sprites) 
     if player != None:

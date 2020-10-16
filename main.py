@@ -132,7 +132,7 @@ def main(screen):
         
 
     sprites = [player, shield]
-    particles = []
+    
     
     for x in range(50):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
@@ -175,10 +175,10 @@ def main(screen):
                 if s.tick != None:
                     s.tick(s, game_map, ts, sprites)
                 #creaures.attempt_walk(s, game_map, ts)
-        for p in particles:
+        for p in part.particles:
             part.tick_particle(p)
             if p.lifespan <= 0:
-                particles.remove(p)
+                part.particles.remove(p)
             
         shield.x = player.x - 17
         shield.y = player.y - 10
@@ -190,7 +190,7 @@ def main(screen):
             
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
-                part.crazy_splatter(particles, player.x + 50, player.y + 50, (255,0,0))
+                part.crazy_splatter(player.x + 50, player.y + 50, (255,0,0))
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
@@ -198,7 +198,7 @@ def main(screen):
                     running = False
                 
         screen.fill((0,0,0))        
-        display.draw_interface(screen, cam, ts, game_map, sprites,particles)
+        display.draw_interface(screen, cam, ts, game_map, sprites)
         
         pygame.display.flip()
 
