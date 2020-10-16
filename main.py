@@ -17,7 +17,7 @@ from pygame.locals import *
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
-    speed = 4
+    speed = 8
     dx = 0
     dy = 0
     
@@ -79,12 +79,12 @@ def main(screen):
 
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
-
-
+    
+    game_map = dungeongen.make_dungeon(500)
+    
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
-    ts = display.load_tileset(tsimg, 32, 32)
-    
+    ts = display.load_tileset(tsimg, 32, 32)        
     panim = {
              "standing": {"up": ("dude", 64, 64, [0], 5),
                          "left": ("dude", 64, 64, [9], 5),
@@ -94,7 +94,7 @@ def main(screen):
                         "left": ("dude", 64, 64, range(10, 18), 2),
                         "down": ("dude", 64, 64, range(19, 27), 2),
                         "right": ("dude", 64, 64, range(28, 36), 2)}}
-                        
+
     
                         
     banim = { "walking": {"left": ("boganim", 105, 80, [0,1,2], 7),
@@ -107,11 +107,12 @@ def main(screen):
     game_map = dungeongen.make_dungeon(100)
     
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
+
     player = creatures.Sprite(400, 400, "player", panim)
     player.tick = creatures.tick_player
-    player = creatures.Sprite(400, 400, "player", panim)
     creatures.randomspawn(player,game_map)
     player.hitbox = pygame.Rect(24, 43, 18, 18)
+    player.hitpoints = 100
     enemy = creatures.Sprite(600, 600, "monk", panim)
     
     
@@ -131,7 +132,7 @@ def main(screen):
     sprites = [player, shield]
     particles = []
     
-    for x in range(20):
+    for x in range(80):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map)
         borgalon.vx = 1
@@ -144,6 +145,11 @@ def main(screen):
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
 
     
+    shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
+    border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
+    
+    sprites.append(shield)
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)

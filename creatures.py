@@ -67,6 +67,8 @@ def switch_anim(s, anim_name):
     else:
         s.next_anim = anim_name
 
+
+
 def tick_anim(s):
     if s.anim_timer == None:
         return
