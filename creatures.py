@@ -161,14 +161,12 @@ def tick_borgalon(borgalon, m, ts, sprites):
         
     
         
-            
-
-def attempt_walk(s, m, ts):
+def attempt_v_move(s, vx, vy,  m, ts):
     s.last_x = s.x
     s.last_y = s.y
 
-    s.x += s.vx
-    s.y += s.vy
+    s.x += vx
+    s.y += vy
 
     hx = s.x + s.hitbox.x 
     hy = s.y + s.hitbox.y
@@ -188,8 +186,11 @@ def attempt_walk(s, m, ts):
         s.x = s.last_x
         s.y = s.last_y
         return
+    
 
-        
+def attempt_walk(s, m, ts):
+    attempt_v_move(s, s.vx, 0, m, ts)
+    attempt_v_move(s, 0, s.vy, m, ts)
     
 
 def make_shield():
