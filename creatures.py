@@ -83,9 +83,17 @@ def tick_anim(s):
             
 def randomspawn(s, m):
     spawnpoints = get_coords(m,0)
-    spawn_x, spawn_y = choice(spawnpoints)
-    s.x = spawn_x * 32
-    s.y = spawn_y * 32
+    bad = True
+    while(bad):
+        spawn_x, spawn_y = choice(spawnpoints)
+        try:
+            if m[spawn_y][spawn_x + 1] == 0 and m[spawn_y+1][spawn_x + 1] == 0 and m[spawn_y + 1][spawn_x] == 0:
+                bad = False
+        except:
+            bad = True
+
+        s.x = spawn_x * 32
+        s.y = spawn_y * 32
     
             
 def generic_tick(p, m, ts, sprites):
