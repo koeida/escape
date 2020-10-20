@@ -177,12 +177,16 @@ def make_dungeon(size, viz_screen=None):
             for r in z:
                 r.zone_num = zone_num
             room_list += z
-            draw_viz(viz_screen, room_list, "zone %d/%d" % (zone_num, len(zones)))
+            #draw_viz(viz_screen, room_list, "zone %d/%d" % (zone_num, len(zones)))
             zone_num += 1
 
+    draw_viz(viz_screen, room_list, "shrunked") 
 
     for z in zones:
-        make_zone(z, dungeon)
+        make_zone(z, dungeon, viz_screen)
+    
+    draw_viz(viz_screen, room_list, "shrunked") 
+
     return dungeon
     
 
@@ -199,9 +203,6 @@ def make_zone(rooms, dungeon, viz_screen=None):
     
     shrink_rooms(rooms)
 
-    if viz_screen != None:
-        pass
-    
     for r in rooms:
         stamp(r.x, r.y, make_room(r.w, r.h, 0, 6), dungeon)
     for p in pairs:
@@ -215,6 +216,8 @@ def make_zone(rooms, dungeon, viz_screen=None):
 def waitforkey():
     while(True):
         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit()
             if event.type == pygame.KEYDOWN:
                 return
 
