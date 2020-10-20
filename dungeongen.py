@@ -173,7 +173,7 @@ def stamp_hallway(r1, r2, atype, m):
             m[cur_y][cur_x] = 4
             return
          
-        if m[cur_y][cur_x] not in [3, 14]:
+        if m[cur_y][cur_x] not in [3, 4]:
             cur_x = old_x
             cur_y = old_y
             

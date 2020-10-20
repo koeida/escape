@@ -79,7 +79,7 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
     
-    game_map = dungeongen.make_dungeon(500)
+    game_map = dungeongen.make_dungeon(140)
     
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
