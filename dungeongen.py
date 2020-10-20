@@ -1,6 +1,12 @@
 from random import choice, randint
 import bsp
 import itertools
+import pygame
+import time
+from copy import deepcopy
+
+dungeon_viz = []
+colors = [(randint(0,255), randint(0,255), randint(0,255)) for x in range(50)]
 
 def make_room(w,h, floor_tile=0, wall_tile=1):
     """Returns a list of lists of tile numbers"""
@@ -154,30 +160,55 @@ def stamp_hallway(r1, r2, atype, m):
         if cur_x == end[0] and cur_y == end[1]:
             return
          
-        if m[cur_y][cur_x] not in [3, 14]:
+        if m[cur_y][cur_x] not in [3, 4]:
             cur_x = old_x
             cur_y = old_y
 
         
-def make_dungeon(size):
+def make_dungeon(size, viz_screen=None):
+    global dungeon_viz
+
     blank_tile = 3
     dungeon = [[blank_tile for x in range(size)] for y in range(size)]
     zones = bsp.make_bsp_rooms(size,size)
+    zone_num = 1
+    room_list = []
+    if viz_screen != None:
+        for z in zones:
+            for r in z:
+                r.zone_num = zone_num
+            room_list += z
+            #draw_viz(viz_screen, room_list, "zone %d/%d" % (zone_num, len(zones)))
+            zone_num += 1
+
+    if viz_screen != None:
+        draw_viz(viz_screen, room_list, "shrunked") 
+
+    room_list = deepcopy(room_list)
+    shrink_rooms(room_list)
+
     for z in zones:
-        make_zone(z, dungeon)
+        make_zone(z, dungeon, viz_screen, room_list)
+    
+    if viz_screen != None:
+        draw_viz(viz_screen, room_list, "shrunked") 
+
     return dungeon
     
-    
-    
-def make_zone(rooms, dungeon):
-    pairs = get_pairs(rooms)
-    
+
+def shrink_rooms(rooms):
     for r in rooms:
         r.x += 3
         r.y += 3
         r.w -= 6
         r.h -= 6
+
     
+def make_zone(rooms, dungeon, viz_screen=None, room_list=[]):
+    pairs = get_pairs(rooms)
+
+    shrink_rooms(rooms)
+
     for r in rooms:
         stamp(r.x, r.y, make_room(r.w, r.h, 0, 6), dungeon)
     for p in pairs:
@@ -186,6 +217,79 @@ def make_zone(rooms, dungeon):
         
         stamp_hallway(r1, r2, adj_data[1], dungeon)
             
+    if viz_screen != None:
+        draw_viz(viz_screen, room_list, "hallway %s -> %s (%s)" % (r1, r2, adj_data[1]), dungeon)
     return dungeon
 
+def waitforkey():
+    while(True):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit()
+            if event.type == pygame.KEYDOWN:
+                return
+
+def write_text(screen, x, y, size, t, color=(255,255,255)):
+    font = pygame.font.SysFont(None, size)
+    img = font.render(t, True, color)
+    screen.blit(img, (x, y))
+
+def draw_all_rooms(screen, rooms, tw):
+    for r in rooms:
+        x = r.x
+        y = r.y
+        screen.fill(r.color, (x * tw, y * tw, r.w*tw, r.h*tw))
+        write_text(screen, r.x * tw,r.y * tw, 12, str(r))
+        write_text(screen, r.x * tw,r.y * tw + 12, 24, str(r.zone_num))
+        #screen.fill((255,0,0), (y*tile_width,x*tile_width,r.w * tile_width,r.h * tile_width))
+
+def draw_viz(screen, rooms, msg="", dungeon=[]):
+    screen.fill((0,0,0))        
+    tw = 4
+
+    draw_all_rooms(screen, rooms, tw)
+    if dungeon != []:
+        for y in range(len(dungeon)):
+            for x in range(len(dungeon)):
+                if dungeon[y][x] == 4:
+                    print("filly!")
+                    screen.fill((255,255,255), (x*tw, y*tw, tw, tw))
+    write_text(screen, 10, 1000, 24, msg)
+
+    pygame.display.flip()
+    waitforkey()
+
+
+def visualize_gen(screen):   
+    clock = pygame.time.Clock()
+    running = True
+    make_dungeon(140, screen)
+
+
+#pygame.init()
+#screen = pygame.display.set_mode((1280, 1024))
+#try:
+#    visualize_gen(screen)
+#except Exception as e:
+#    print(e)
+#    pygame.display.quit()
+
+def drawy():
+    test_map = [[0 for x in range(70)] for y in range(70)]
+
+    r1 = make_room(11, 30, floor_tile=0, wall_tile=1)
+    r2 = make_room(12, 26, floor_tile=0, wall_tile=1)
+
+    stamp(3, 3, r1, test_map)
+    stamp(17, 39, r1, test_map)
+    #stamp_hallway(r1, r2, 
+
+    for r in test_map:
+        r = list(map(str,r))
+        print("".join(r))
+
+
+                
+
+        
 
