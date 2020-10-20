@@ -250,7 +250,7 @@ def draw_viz(screen, rooms, msg=""):
 def visualize_gen(screen):   
     clock = pygame.time.Clock()
     running = True
-    make_dungeon(200, screen)
+    make_dungeon(120, screen)
 
 
 pygame.init()

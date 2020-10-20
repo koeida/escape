@@ -77,7 +77,7 @@ def get_branches(head, depth):
 def make_bsp_rooms(width, height):    
     head = Node(Area(0,0,width, height,"vert"))
     split_area(head, 0)
-    zones = get_branches(head, 7)
+    zones = get_branches(head, 4)
     zones = list(map(get_leaves, zones))
     for x in range(len(zones)):
         zones[x] = list(map(lambda r: r.name, zones[x]))
