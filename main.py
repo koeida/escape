@@ -1,7 +1,7 @@
 from gamemap import gen_test_map
 from input import get_input
 from random import randint, uniform
-from tools import get_coords
+from tools import get_coords, distance
 import collisions
 import creatures
 import display
@@ -17,7 +17,7 @@ from pygame.locals import *
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
-    speed = 8
+    speed = 4
     dx = 0
     dy = 0
     
@@ -133,14 +133,14 @@ def main(screen):
 
     sprites = [player, shield]
     
-    
-    for x in range(50):
+    spawnpoints = get_coords(game_map,0)
+    for x in range(1000):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
-        creatures.randomspawn(borgalon,game_map)
+        creatures.randomspawn(borgalon,game_map, spawnpoints)
         borgalon.vx = 1
         borgalon.vy = 0
         borgalon.facing = "right"
-        borgalon.mode = "chase"
+        borgalon.mode = "cheel"
         borgalon.target = player
         borgalon.tick = creatures.tick_borgalon
         sprites.append(borgalon)
@@ -174,7 +174,7 @@ def main(screen):
             if s.kind != "wall":
                 if s.tick != None:
                     s.tick(s, game_map, ts, sprites)
-                #creaures.attempt_walk(s, game_map, ts)
+                    #creaures.attempt_walk(s, game_map, ts)
         for p in part.particles:
             part.tick_particle(p)
             if p.lifespan <= 0:
@@ -185,7 +185,8 @@ def main(screen):
         #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
         shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
         
-        collisions.check_collisions(sprites)
+        nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
+        collisions.check_collisions(nearby_sprites)
         sprites = list(filter(lambda s: s.alive, sprites))
             
         for event in pygame.event.get():

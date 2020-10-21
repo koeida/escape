@@ -81,8 +81,9 @@ def tick_anim(s):
             s.current_animation = s.next_anim
             s.next_anim = None
             
-def randomspawn(s, m):
-    spawnpoints = get_coords(m,0)
+def randomspawn(s, m, spawnpoints=[]):
+    if spawnpoints == []:
+        spawnpoints = get_coords(m,0)
     bad = True
     while(bad):
         spawn_x, spawn_y = choice(spawnpoints)
