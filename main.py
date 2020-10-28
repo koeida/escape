@@ -190,9 +190,8 @@ def main(screen):
             player.alive = False
             shield.alive = False
         
-
         nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
-        collisions.check_collisions(nearby_sprites)
+        collisions.check_collisions(nearby_sprites, sprites)
         sprites = list(filter(lambda s: s.alive, sprites))
             
         for event in pygame.event.get():
