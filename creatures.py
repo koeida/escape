@@ -7,55 +7,8 @@ from tools import distance,get_coords, clamp
 from random import randint, uniform,choice
 
 import collisions
-
-class Animation: 
-    def __init__(self, name, anim_db):
-        self.name = name
-        self.anim_db = anim_db
-
-class Sprite:
-    def __init__(self, x, y, kind, animations=None, current_animation="walking", simple_img=None):
-        self.x = x
-        self.y = y
-        self.kind = kind
-        self.animations = animations
-        self.current_animation = current_animation
-        self.current_frame = 0
-        self.cur_anim_timer = 0
-        self.facing = "down"
-        self.anim_timer = None if animations == None else animations[current_animation][self.facing][4]
-        self.last_x = self.x
-        self.last_y = self.y
-        self.vx = 0
-        self.vy = 0
-        self.simple_img = simple_img
-        self.next_anim = None
-        self.tick = generic_tick
-        self.alive = True
-        self.hitpoints = 100
-        self.hitbox = self.get_rect()
-        self.hitbox.x = 0
-        self.hitbox.y = 0
-        self.deflected_timer = 0
-
-    def get_rect(self):
-        if self.simple_img != None:
-            return self.simple_img.get_rect()
-        else:
-            aname, width, height, aframes, adelay = self.animations[self.current_animation][self.facing]
-            img = world.image_db[aname]
-            ts = display.load_tileset(img, width, height)
-            result = pygame.Rect(self.x, self.y, width, height)
-            return result 
-    def get_img(self):
-        if self.simple_img != None:
-            return self.simple_img
-        else:
-            aname, width, height, aframes, adelay = self.animations[self.current_animation][self.facing]
-            img = world.image_db[aname]
-            return img 
-
-            
+from sprites import Sprite
+           
 def switch_anim(s, anim_name):
     if s.current_animation == anim_name:
         return
@@ -66,8 +19,6 @@ def switch_anim(s, anim_name):
         s.current_animation = anim_name
     else:
         s.next_anim = anim_name
-
-
 
 def tick_anim(s):
     if s.anim_timer == None:
@@ -81,11 +32,20 @@ def tick_anim(s):
             s.current_animation = s.next_anim
             s.next_anim = None
             
-def randomspawn(s, m):
-    spawnpoints = get_coords(m,0)
-    spawn_x, spawn_y = choice(spawnpoints)
-    s.x = spawn_x * 32
-    s.y = spawn_y * 32
+def randomspawn(s, m, spawnpoints=[]):
+    if spawnpoints == []:
+        spawnpoints = get_coords(m,0)
+    bad = True
+    while(bad):
+        spawn_x, spawn_y = choice(spawnpoints)
+        try:
+            if m[spawn_y][spawn_x + 1] == 0 and m[spawn_y+1][spawn_x + 1] == 0 and m[spawn_y + 1][spawn_x] == 0:
+                bad = False
+        except:
+            bad = True
+
+        s.x = spawn_x * 32
+        s.y = spawn_y * 32
     
             
 def generic_tick(p, m, ts, sprites):
@@ -117,7 +77,9 @@ def tick_puke(p, m, ts, sprites):
             
 def tick_player(p, m, ts, sprites):
     attempt_walk(p, m, ts)
-            
+    
+
+
 def tick_borgalon(borgalon, m, ts, sprites):
     if borgalon.mode == "chase":
         if borgalon.target.x > borgalon.x:
@@ -138,14 +100,20 @@ def tick_borgalon(borgalon, m, ts, sprites):
             borgalon.mode = "attack"
             borgalon.vx = 0
             borgalon.vy = 0
-        
+        if distance(borgalon,borgalon.target) >= 1000:
+            borgalon.mode = "cheel"
+            
+    if borgalon.mode == "cheel":
+        if distance(borgalon,borgalon.target) <=500:
+            borgalon.mode = "chase"
+            
     if borgalon.mode == "attack":
-        if randint(1,5) == 1:
+        if randint(1,10) == 1:
             puke_anim = { "walking": {"down": ("puke", 20, 20, [0, 1], 3)}}
             puke = Sprite(borgalon.x, borgalon.y, "puke", puke_anim)
             puke.target = borgalon.target
             puke.vy = 3
-            puke.vx = uniform(-3, 3)
+            puke.vx = uniform(-5, 5)
             puke.lifespan = randint(50,250)
             puke.tick = tick_puke
             sprites.append(puke)
@@ -157,14 +125,12 @@ def tick_borgalon(borgalon, m, ts, sprites):
         
     
         
-            
-
-def attempt_walk(s, m, ts):
+def attempt_v_move(s, vx, vy,  m, ts):
     s.last_x = s.x
     s.last_y = s.y
 
-    s.x += s.vx
-    s.y += s.vy
+    s.x += vx
+    s.y += vy
 
     hx = s.x + s.hitbox.x 
     hy = s.y + s.hitbox.y
@@ -184,8 +150,11 @@ def attempt_walk(s, m, ts):
         s.x = s.last_x
         s.y = s.last_y
         return
+    
 
-        
+def attempt_walk(s, m, ts):
+    attempt_v_move(s, s.vx, 0, m, ts)
+    attempt_v_move(s, 0, s.vy, m, ts)
     
 
 def make_shield():

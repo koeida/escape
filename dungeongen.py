@@ -3,6 +3,12 @@ import bsp
 import itertools
 from tools import first, two_chunk
 from copy import deepcopy
+import pygame
+import time
+from copy import deepcopy
+
+dungeon_viz = []
+colors = [(randint(0,255), randint(0,255), randint(0,255)) for x in range(50)]
 
 class Graphnode:
     def __init__ (self, name, value, neighbors=None):
@@ -225,8 +231,7 @@ def make_graph(zone_pairs):
         if z2n == None:
             z2n = Graphnode(z2.name, z2)
             nodes.append(z2n)
-        
-        
+    
         assert(id(z1n.neighbors) != id(z2n.neighbors))
         z1n.neighbors.add(z2n)
         z2n.neighbors.add(z1n)
@@ -351,7 +356,128 @@ def make_zone_hallways(rooms, dungeon):
         stamp_hallway(shrink_room(r1), shrink_room(r2), adj_data[1], dungeon)
     
     
+def make_dungeon_keeg(size, viz_screen=None):
+    global dungeon_viz
+
+    blank_tile = 3
+    dungeon = [[blank_tile for x in range(size)] for y in range(size)]
+    zones = bsp.make_bsp_rooms(size,size)
+    zone_num = 1
+    room_list = []
+    if viz_screen != None:
+        for z in zones:
+            for r in z:
+                r.zone_num = zone_num
+            room_list += z
+            #draw_viz(viz_screen, room_list, "zone %d/%d" % (zone_num, len(zones)))
+            zone_num += 1
+
+    if viz_screen != None:
+        draw_viz(viz_screen, room_list, "shrunked") 
+
+    room_list = deepcopy(room_list)
+    shrink_rooms(room_list)
+
+    for z in zones:
+        make_zone(z, dungeon, viz_screen, room_list)
+    
+    if viz_screen != None:
+        draw_viz(viz_screen, room_list, "shrunked") 
+
+    return dungeon
+    
+
+def shrink_rooms_keeg(rooms):
+    for r in rooms:
+        r.x += 3
+        r.y += 3
+        r.w -= 6
+        r.h -= 6
+
+    
+def make_zone_keeg(rooms, dungeon, viz_screen=None, room_list=[]):
+    pairs = get_pairs(rooms)
+
+    shrink_rooms(rooms)
+
+    for r in rooms:
+        stamp(r.x, r.y, make_room(r.w, r.h, 0, 6), dungeon)
+    for p in pairs:
+        room_pair, adj_data = p
+        r1, r2 = room_pair
+        
+        stamp_hallway(r1, r2, adj_data[1], dungeon)
             
+    if viz_screen != None:
+        draw_viz(viz_screen, room_list, "hallway %s -> %s (%s)" % (r1, r2, adj_data[1]), dungeon)
     return dungeon
 
+
 #make_dungeon(130)
+
+def waitforkey():
+    while(True):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit()
+            if event.type == pygame.KEYDOWN:
+                return
+
+def write_text(screen, x, y, size, t, color=(255,255,255)):
+    font = pygame.font.SysFont(None, size)
+    img = font.render(t, True, color)
+    screen.blit(img, (x, y))
+
+def draw_all_rooms(screen, rooms, tw):
+    for r in rooms:
+        x = r.x
+        y = r.y
+        screen.fill(r.color, (x * tw, y * tw, r.w*tw, r.h*tw))
+        write_text(screen, r.x * tw,r.y * tw, 12, str(r))
+        write_text(screen, r.x * tw,r.y * tw + 12, 24, str(r.zone_num))
+        #screen.fill((255,0,0), (y*tile_width,x*tile_width,r.w * tile_width,r.h * tile_width))
+
+def draw_viz(screen, rooms, msg="", dungeon=[]):
+    screen.fill((0,0,0))        
+    tw = 4
+
+    draw_all_rooms(screen, rooms, tw)
+    if dungeon != []:
+        for y in range(len(dungeon)):
+            for x in range(len(dungeon)):
+                if dungeon[y][x] == 4:
+                    print("filly!")
+                    screen.fill((255,255,255), (x*tw, y*tw, tw, tw))
+    write_text(screen, 10, 1000, 24, msg)
+
+    pygame.display.flip()
+    waitforkey()
+
+
+def visualize_gen(screen):   
+    clock = pygame.time.Clock()
+    running = True
+    make_dungeon(140, screen)
+
+
+#pygame.init()
+#screen = pygame.display.set_mode((1280, 1024))
+#try:
+#    visualize_gen(screen)
+#except Exception as e:
+#    print(e)
+#    pygame.display.quit()
+
+def drawy():
+    test_map = [[0 for x in range(70)] for y in range(70)]
+
+    r1 = make_room(11, 30, floor_tile=0, wall_tile=1)
+    r2 = make_room(12, 26, floor_tile=0, wall_tile=1)
+
+    stamp(3, 3, r1, test_map)
+    stamp(17, 39, r1, test_map)
+    #stamp_hallway(r1, r2, 
+
+    for r in test_map:
+        r = list(map(str,r))
+        print("".join(r))

@@ -7,7 +7,8 @@ FPS = 60
 image_db = ["BODY_male.png",
             "LEGS_robe_skirt.png",
             "boganim.png",
-            "puke.png"]
+            "puke.png",
+            "BLOOD.png"]
     
 def load_assets():
     global image_db

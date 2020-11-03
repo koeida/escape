@@ -3,11 +3,12 @@ from pptree import Node, print_tree
 from random import randint
 
 class Area: 
-    def __init__(self, x, y, w, h, split_mode=None):
+    def __init__(self, x, y, w, h, split_mode=None, zone_num=0):
         self.x = x
         self.y = y
         self.w = w
         self.h = h
+        self.zone_num = zone_num
         self.color = (randint(0,255), randint(0,255), randint(0,255))
         self.split_mode = split_mode
     def __str__(self): return "%d,%d %dx%d" % (self.x, self.y, self.w, self.h)
@@ -81,7 +82,7 @@ def make_bsp_rooms(width, height):
     for x in range(len(zones)):
         zones[x] = list(map(lambda r: r.name, zones[x]))
     
-    # rooms = get_leaves(branch)
+    #rooms = get_leaves(branch)
     # rooms = list(map(lambda r: r.name, rooms))
     # #print_tree(branch)
     # print(branch)
