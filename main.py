@@ -91,7 +91,6 @@ def main(screen):
     world.image_db["dude"] = stacked_dude
     
     game_map = dungeongen.make_dungeon(140)
-
     
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
@@ -115,7 +114,6 @@ def main(screen):
                          }
             }
     
-    game_map = dungeongen.make_dungeon(500)
     
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
 
@@ -145,7 +143,7 @@ def main(screen):
     sprites = [player, shield]
     
     spawnpoints = get_coords(game_map,0)
-    for x in range(1000):
+    for x in range(10):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)
         borgalon.vx = 1
