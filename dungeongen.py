@@ -1,6 +1,8 @@
 from random import choice, randint
 import bsp
 import itertools
+from tools import first, two_chunk
+from copy import deepcopy
 import pygame
 import time
 from copy import deepcopy
@@ -8,6 +10,17 @@ from copy import deepcopy
 dungeon_viz = []
 colors = [(randint(0,255), randint(0,255), randint(0,255)) for x in range(50)]
 
+class Graphnode:
+    def __init__ (self, name, value, neighbors=None):
+        self.name = name
+        self.value = value
+        self.neighbors = set()
+        
+class Zone:
+    def __init__ (self, name, rooms):
+        self.name = name
+        self.rooms = rooms
+        
 def make_room(w,h, floor_tile=0, wall_tile=1):
     """Returns a list of lists of tile numbers"""
     results = []
@@ -73,13 +86,17 @@ def stamp(x,y,s,m, ignore_tile=None):
 def adjacentcheck(r1, r2):
     #print("%s ==? %s" % (r1, r2))
     if r1.x + r1.w == r2.x:
-        return (True, "rl")
-    if r1.y == r2.y + r2.h:
-        return (True, "ud")
-    if r1.x == r2.x + r2.w:
         return (True, "lr")
-    if r1.y + r1.h == r2.y:
+    # r1.y
+    if r1.y == r2.y + r2.h:
         return (True, "du")
+    if r1.x == r2.x + r2.w:
+        return (True, "rl")
+    if r1.y + r1.h == r2.y:
+        return (True, "ud")
+   # print(r1)
+    #print(r2)
+    #print("")
     return (False, None)
     
 def get_pairs(rooms):
@@ -88,7 +105,7 @@ def get_pairs(rooms):
     pairs = list(filter(lambda p: p[1][0], pairs))
     
     return pairs
-
+    
 def get_door(r, side):
     if side in ("l", "r"):
         l = range(r.y + 1, r.y + r.h - 1)
@@ -124,21 +141,25 @@ def change_d(dir, d):
         cur_y = d[1]
     return (cur_x, cur_y)
 
-def stamp_hallway(r1, r2, atype, m):
-    d1 = get_door(r1, atype[0])
-    d2 = get_door(r2, atype[1])
+def stamp_hallway(r1, r2, atype, m, doortile=2, hall_tile=4):
+    # if r1 is left of r2 then the atype will be lr
+    # But, in terms of hallway building, if r1 is left of r2, 
+    #   the door is on the right and the hallway digs to the right
+    # Therefore, you need to swap directions (e.g, to rl) when thinking about digging.
+    
+    d1 = get_door(r1, atype[1])
+    d2 = get_door(r2, atype[0])
     if d1 == None or d2 == None:
         return
-    m[d1[1]][d1[0]] = 12 if randint(1, 5) == 1 else 2
-    m[d2[1]][d2[0]] = 12 if randint(1, 5) == 1 else 2
-    dir = atype[0]
+    m[d1[1]][d1[0]] = doortile #if randint(1, 5) == 1 else 2
+    m[d2[1]][d2[0]] = doortile #if randint(1, 5) == 1 else 2
+    dir = atype[1]
     cur_x, cur_y = change_d(dir, d1)
-    end = change_d(atype[1], d2)
-    m[end[1]][end[0]] = 4
+    end = change_d(atype[0], d2)
+    #m[end[1]][end[0]] = 4
     l = 0
     while True:
-        l += 1
-        m[cur_y][cur_x] = 4
+        m[cur_y][cur_x] = hall_tile
         old_x = cur_x
         old_y = cur_y
         if randint(1,2) == 1   :
@@ -155,17 +176,187 @@ def stamp_hallway(r1, r2, atype, m):
                 cur_y -= 1
             else:
                 cur_y += randint(-1, 1)
+        
         if l == 100:
+            #print("nub!")
             return
         if cur_x == end[0] and cur_y == end[1]:
+            m[cur_y][cur_x] = hall_tile
             return
          
         if m[cur_y][cur_x] not in [3, 4]:
             cur_x = old_x
             cur_y = old_y
+            
+        if cur_x == old_x and cur_y == old_y:
+            l += 1 
 
+# testmap = [[3 for x in range(50)] for y in range(30)]    
+# r1 = bsp.Area(30,9,10,5)    
+# r2 = bsp.Area(11,16,10,10)
+# r1s = make_room(r1.w, r1.h)
+# r2s = make_room(r2.w, r2.h)
+# stamp(r1.x, r1.y, r1s, testmap)
+# stamp(r2.x, r2.y, r2s, testmap)
+# stamp_hallway(r1, r2, "du", testmap)
+# for row in testmap:
+    # r = list(map(str,row))
+    # print("".join(r)) 
+
+def adjacent_zone_rooms(z1, z2):
+    roomstocheck = itertools.product(z2.rooms, z1.rooms)
+    pairs = list(filter(lambda p: adjacentcheck(p[0], p[1])[0], roomstocheck))
+    return pairs
+    
+def adjacent_zones(zones):
+    results = []
+    combos = itertools.combinations(zones, 2)
+    for c in combos:
+        pairs = adjacent_zone_rooms(c[0], c[1])
+        if pairs != []:
+            results.append(c)
+    return results           
+
+def make_graph(zone_pairs):
+    cur_name = 0
+    nodes = []
+    for z1, z2 in zone_pairs:
+        z1n = first(lambda n: n.value == z1, nodes)
+        z2n = first(lambda n: n.value == z2, nodes)
         
-def make_dungeon(size, viz_screen=None):
+        
+        if z1n == None:
+            z1n = Graphnode(z1.name, z1)
+            nodes.append(z1n)
+        if z2n == None:
+            z2n = Graphnode(z2.name, z2)
+            nodes.append(z2n)
+    
+        assert(id(z1n.neighbors) != id(z2n.neighbors))
+        z1n.neighbors.add(z2n)
+        z2n.neighbors.add(z1n)
+        
+        
+        #print(z1n.neighbors)
+        
+        #print("joining %s and %s" % (z1n.name, z2n.name))
+        #for n in z1n.neighbors:
+        #    print("\t%s" % n.name)
+       
+        
+    
+    for n in nodes:
+        print(n.name)
+        for nb in n.neighbors:
+            print("\t%s", nb.name)
+    #print()
+    #print(len(zone_pairs))
+    return nodes[0]
+
+def connect_zones(zones, node):
+    walk = done_walk(node, len(zones))
+    walk = list(map(lambda n: n.name, walk))
+    chunks = two_chunk(walk)
+    print(walk)
+    results = []
+    for c in chunks:
+       pairs = adjacent_zone_rooms(zones[c[0]], zones[c[1]])
+       r1, r2  = choice(pairs)
+       direction = adjacentcheck(r1,r2)[1]
+       results.append((r1, r2, direction))
+    return results
+    
+def done_walk(cur_node, length):
+    history = []
+    while len(history) != length:
+        history = drunken_walk([], cur_node)
+    return history
+    
+    
+def drunken_walk(history, cur_node):
+    n = cur_node.neighbors
+    n = list(filter(lambda x: x not in history, n))
+    if n == []:
+        return history
+    else:
+        node = choice(n)
+        history.append(node)
+        return drunken_walk(history, node)
+
+def shrink_room(room):
+    r = deepcopy(room)
+    r.x += 3
+    r.y += 3
+    r.w -= 6
+    r.h -= 6
+    return r
+    
+def make_dungeon(size):
+    blank_tile = 3
+    dungeon = [[blank_tile for x in range(size)] for y in range(size)]
+    zs = bsp.make_bsp_rooms(size,size)
+    zones = []
+    for z in range(len(zs)):
+        zone = Zone(z, zs[z])
+        zones.append(zone)
+    azones = adjacent_zones(zones)
+    #for a in azones:
+    #    print(a)
+ 
+    #exit()
+    # Looks to me like adjacent zones is returning somewhat reasonable data (but with some weird island nodes)
+    # Maybe the bug is in make_graph?
+    n = make_graph(azones)
+    
+    for z in zones:
+        stamp_rooms(z.rooms, dungeon)
+        
+    joined_rooms = connect_zones(zones, n)
+    for r1, r2, atype in joined_rooms:   
+        stamp_hallway(shrink_room(r1), shrink_room(r2), atype,dungeon, 12, 10)
+
+    line_hallways(size, dungeon)
+    
+    for z in zones:
+        make_zone_hallways(z.rooms, dungeon)
+    
+    return dungeon
+    
+def line_hallways(size, dungeon):
+    for y in range(size):
+        for x in range(size):
+            try:
+                adjacenttiles = [dungeon[y + 1][x], dungeon[y - 1][x], dungeon[y][x + 1], dungeon[y][x - 1], dungeon[y + 1][x + 1], dungeon[y - 1][x - 1], dungeon[y + 1][x - 1], dungeon[y - 1][x + 1]]
+                if dungeon[y][x] == 3 and 10 in adjacenttiles: 
+                   dungeon[y][x] = 1
+            except:
+                pass
+    for y in range(size):
+        for x in range(size):
+            if dungeon[y][x] == 10:
+                dungeon[y][x] = 4
+                
+def stamp_rooms(rooms, dungeon):
+    shrunk_rooms = map(shrink_room, rooms)
+    
+    for r in shrunk_rooms:
+        stamp(r.x, r.y, make_room(r.w, r.h, 0, 6), dungeon)    
+def make_zone_hallways(rooms, dungeon):
+    pairs = get_pairs(rooms)
+    
+       #stamp(r.x + 5, r.y + 5, make_room(r.w - 10, r.h - 10, 0, 98), dungeon)
+    for p in pairs:
+        room_pair, adj_data = p
+        r1, r2 = room_pair
+        # print(r1)
+        # print(r2)        
+        # print(adj_data)
+        # exit() 
+        
+        stamp_hallway(shrink_room(r1), shrink_room(r2), adj_data[1], dungeon)
+    
+    
+def make_dungeon_keeg(size, viz_screen=None):
     global dungeon_viz
 
     blank_tile = 3
@@ -196,7 +387,7 @@ def make_dungeon(size, viz_screen=None):
     return dungeon
     
 
-def shrink_rooms(rooms):
+def shrink_rooms_keeg(rooms):
     for r in rooms:
         r.x += 3
         r.y += 3
@@ -204,7 +395,7 @@ def shrink_rooms(rooms):
         r.h -= 6
 
     
-def make_zone(rooms, dungeon, viz_screen=None, room_list=[]):
+def make_zone_keeg(rooms, dungeon, viz_screen=None, room_list=[]):
     pairs = get_pairs(rooms)
 
     shrink_rooms(rooms)
@@ -220,6 +411,9 @@ def make_zone(rooms, dungeon, viz_screen=None, room_list=[]):
     if viz_screen != None:
         draw_viz(viz_screen, room_list, "hallway %s -> %s (%s)" % (r1, r2, adj_data[1]), dungeon)
     return dungeon
+
+
+#make_dungeon(130)
 
 def waitforkey():
     while(True):
@@ -287,9 +481,3 @@ def drawy():
     for r in test_map:
         r = list(map(str,r))
         print("".join(r))
-
-
-                
-
-        
-

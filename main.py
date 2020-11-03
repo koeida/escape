@@ -25,7 +25,8 @@ def get_input(player, m, ts):
     s = keys[pygame.K_s]
     d = keys[pygame.K_d]
     a = keys[pygame.K_a]
-
+    o = keys[pygame.K_o]
+    
     oldfacing = player.facing
     
     if w:
@@ -40,11 +41,20 @@ def get_input(player, m, ts):
     if a:
         player.vx = -speed
         player.facing = "left"
+    if o:
+        x = int((player.x + 32) / 32)
+        y = int((player.y + 32)/ 32)
+        adjacenttiles = ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1), (y + 1, x + 1), (y - 1, x - 1), (y + 1, x - 1), (y - 1, x + 1))
+        doors = list(filter(lambda t: m[t[0]][t[1]] == 12, adjacenttiles))
+        if doors != []:
+            dy, dx = doors[0]
+            m[dy][dx] = 13
+            
     if not s and not w:
         player.vy = 0
     if not a and not d:
         player.vx = 0    
-
+    
     if player.vx == 0 and player.vy == 0:
         creatures.switch_anim(player,"standing")
     else:
@@ -80,7 +90,8 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
     
-    game_map = dungeongen.make_dungeon(1000)
+    game_map = dungeongen.make_dungeon(140)
+
     
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
@@ -185,13 +196,13 @@ def main(screen):
         #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
         shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
         
-
         if player.hitpoints <= 0:
             player.alive = False
             shield.alive = False
         
         nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
         collisions.check_collisions(nearby_sprites, sprites)
+
         sprites = list(filter(lambda s: s.alive, sprites))
             
         for event in pygame.event.get():
