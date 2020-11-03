@@ -1,7 +1,7 @@
 from gamemap import gen_test_map
 from input import get_input
 from random import randint
-from tools import get_coords
+from tools import get_coords, distance
 import collisions
 import creatures
 import display
@@ -24,7 +24,8 @@ def get_input(player, m, ts):
     s = keys[pygame.K_s]
     d = keys[pygame.K_d]
     a = keys[pygame.K_a]
-
+    o = keys[pygame.K_o]
+    
     oldfacing = player.facing
     
     if w:
@@ -39,11 +40,20 @@ def get_input(player, m, ts):
     if a:
         player.vx = -speed
         player.facing = "left"
+    if o:
+        x = int((player.x + 32) / 32)
+        y = int((player.y + 32)/ 32)
+        adjacenttiles = ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1), (y + 1, x + 1), (y - 1, x - 1), (y + 1, x - 1), (y - 1, x + 1))
+        doors = list(filter(lambda t: m[t[0]][t[1]] == 12, adjacenttiles))
+        if doors != []:
+            dy, dx = doors[0]
+            m[dy][dx] = 13
+            
     if not s and not w:
         player.vy = 0
     if not a and not d:
         player.vx = 0    
-
+    
     if player.vx == 0 and player.vy == 0:
         creatures.switch_anim(player,"standing")
     else:
@@ -166,8 +176,8 @@ def main(screen):
         shield.y = player.y - 10
         #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
         shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
-        
-        collisions.check_collisions(sprites)
+        nearby = list(filter(lambda s: distance(s, player) <= 250, sprites))
+        collisions.check_collisions(nearby)
         sprites = list(filter(lambda s: s.alive, sprites))
             
         for event in pygame.event.get():

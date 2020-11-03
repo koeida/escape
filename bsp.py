@@ -33,8 +33,8 @@ def split_horiz(p, min_size):
 
 def split_area(a, cur_depth, max_depth=11, min_size=20):
     p = a.name # p == parent
-    if randint(0,5) == 0 and cur_depth > 3:
-        return None
+    #if randint(0,5) == 0 and cur_depth > 3:
+        #return None
     
     if cur_depth > max_depth or p.w < min_size or p.h < min_size:
         return None
