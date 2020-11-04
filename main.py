@@ -1,7 +1,7 @@
 from gamemap import gen_test_map
 from input import get_input
 from random import randint, uniform
-from tools import get_coords
+from tools import get_coords, distance
 import collisions
 import creatures
 import display
@@ -105,14 +105,14 @@ def main(screen):
             }
     
     game_map = dungeongen.make_dungeon(500)
-    
+    spawnpoints = get_coords(game_map,0)
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
 
     player = creatures.Sprite(400, 400, "player", panim)
     player.tick = creatures.tick_player
     #player.x = 1000
     #player.y = 1000
-    creatures.randomspawn(player,game_map)
+    creatures.randomspawn(player,game_map,spawnpoints)
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     player.hitpoints = 100
     enemy = creatures.Sprite(600, 600, "monk", panim)
@@ -133,16 +133,16 @@ def main(screen):
 
     sprites = [player, shield]
     
-    
-    for x in range(50):
+    for x in range(2000):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
-        creatures.randomspawn(borgalon,game_map)
+        creatures.randomspawn(borgalon,game_map, spawnpoints)
         borgalon.vx = 1
         borgalon.vy = 0
         borgalon.facing = "right"
         borgalon.mode = "chase"
         borgalon.target = player
         borgalon.tick = creatures.tick_borgalon
+        borgalon.hitpoints = 3
         sprites.append(borgalon)
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
 
@@ -185,7 +185,11 @@ def main(screen):
         #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
         shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
         
-        collisions.check_collisions(sprites)
+        nearbysprites = list(filter(lambda s: distance(s,player) < 500, sprites))
+        collisions.check_collisions(nearbysprites)
+        for s in sprites:
+          if s.hitpoints <=0:
+            s.alive = False
         sprites = list(filter(lambda s: s.alive, sprites))
             
         for event in pygame.event.get():

@@ -37,7 +37,7 @@ class Sprite:
         self.hitbox.x = 0
         self.hitbox.y = 0
         self.deflected_timer = 0
-
+       
     def get_rect(self):
         if self.simple_img != None:
             return self.simple_img.get_rect()
@@ -81,8 +81,7 @@ def tick_anim(s):
             s.current_animation = s.next_anim
             s.next_anim = None
             
-def randomspawn(s, m):
-    spawnpoints = get_coords(m,0)
+def randomspawn(s, m, spawnpoints):
     spawn_x, spawn_y = choice(spawnpoints)
     s.x = spawn_x * 32
     s.y = spawn_y * 32
