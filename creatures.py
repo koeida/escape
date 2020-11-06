@@ -54,21 +54,20 @@ def generic_tick(p, m, ts, sprites):
 def tick_puke(p, m, ts, sprites):
     if p.deflected_timer > 0:
         p.deflected_timer -= 1
-    else:
-        if p.target.x > p.x:
-            p.vx += 0.1
-        if p.target.x < p.x:
-            p.vx -= 0.1
-        if p.target.y > p.y:
-            p.vy += 0.1
-            #p.facing ="down"
-        if p.target.y < p.y:
-            p.vy -=0.1
-            #p.facing ="up"
-        max_vel = 4
-        min_vel = -4
-        p.vy = clamp(p.vy, min_vel, max_vel)
-        p.vx = clamp(p.vx, min_vel, max_vel)
+    if p.target.x > p.x:
+        p.vx += 0.1
+    if p.target.x < p.x:
+        p.vx -= 0.1
+    if p.target.y > p.y:
+        p.vy += 0.1
+        #p.facing ="down"
+    if p.target.y < p.y:
+        p.vy -=0.1
+        #p.facing ="up"
+    max_vel = 4
+    min_vel = -4
+    p.vy = clamp(p.vy, min_vel, max_vel)
+    p.vx = clamp(p.vx, min_vel, max_vel)
     attempt_walk(p,m,ts)
     p.lifespan -= 1
 

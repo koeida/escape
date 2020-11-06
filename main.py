@@ -143,7 +143,7 @@ def main(screen):
     sprites = [player, shield]
     
     spawnpoints = get_coords(game_map,0)
-    for x in range(10):
+    for x in range(100):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)
         borgalon.vx = 1

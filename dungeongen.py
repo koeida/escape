@@ -291,7 +291,7 @@ def shrink_room(room):
     r.h -= 6
     return r
     
-def make_dungeon(size):
+def make_dungeon(size, viz_screen=None):
     blank_tile = 3
     dungeon = [[blank_tile for x in range(size)] for y in range(size)]
     zs = bsp.make_bsp_rooms(size,size)
@@ -300,12 +300,21 @@ def make_dungeon(size):
         zone = Zone(z, zs[z])
         zones.append(zone)
     azones = adjacent_zones(zones)
-    #for a in azones:
-    #    print(a)
- 
-    #exit()
-    # Looks to me like adjacent zones is returning somewhat reasonable data (but with some weird island nodes)
-    # Maybe the bug is in make_graph?
+
+    zone_num = 0
+    room_list = []
+    if viz_screen != None:
+        for z in zones:
+            room_list += z.rooms
+            draw_viz(viz_screen, room_list, "")
+        #for z in zones:
+            #for r in z:
+            #    r.zone_num = zone_num
+           # room_list += z
+            #draw_viz(viz_screen, room_list, "")
+            #draw_viz(viz_screen, room_list, "zone %d/%d" % (zone_num, len(zones.rooms)))
+        #    zone_num += 1
+
     n = make_graph(azones)
     
     for z in zones:
@@ -460,13 +469,13 @@ def visualize_gen(screen):
     make_dungeon(140, screen)
 
 
-#pygame.init()
-#screen = pygame.display.set_mode((1280, 1024))
-#try:
-#    visualize_gen(screen)
-#except Exception as e:
-#    print(e)
-#    pygame.display.quit()
+pygame.init()
+screen = pygame.display.set_mode((1280, 1024))
+try:
+    visualize_gen(screen)
+except Exception as e:
+    print(e)
+    pygame.display.quit()
 
 def drawy():
     test_map = [[0 for x in range(70)] for y in range(70)]
