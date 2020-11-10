@@ -15,9 +15,9 @@ import dungeongen
 import particles as part
 from pygame.locals import *
     
-def get_input(player, m, ts):
+def get_input(player, m, ts, cs):
     keys = pygame.key.get_pressed()
-    speed = 4
+    speed = 8
     dx = 0
     dy = 0
     
@@ -29,6 +29,10 @@ def get_input(player, m, ts):
     
     oldfacing = player.facing
     
+    if keys[pygame.K_t]:
+        key = list(filter(lambda x: x.kind == "key", cs))[0]
+        player.x = key.x + 5
+        player.y = key.y + 5
     if w:
         player.vy = -speed
         player.facing = "up"
@@ -90,7 +94,7 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
     
-    game_map = dungeongen.make_dungeon(140)
+    game_map, keys = dungeongen.make_dungeon(140)
     
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
@@ -140,10 +144,10 @@ def main(screen):
 
         
 
-    sprites = [player, shield]
+    sprites = [player, shield] + keys
     
     spawnpoints = get_coords(game_map,0)
-    for x in range(10):
+    for x in range(50):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)
         borgalon.vx = 1
@@ -176,7 +180,7 @@ def main(screen):
         mouse_x, mouse_y = pygame.mouse.get_pos()
         
           
-        get_input(player, game_map, ts)       
+        get_input(player, game_map, ts, sprites)       
         
         for s in sprites:
             creatures.tick_anim(s)

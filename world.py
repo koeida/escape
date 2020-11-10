@@ -8,8 +8,8 @@ image_db = ["BODY_male.png",
             "LEGS_robe_skirt.png",
             "boganim.png",
             "puke.png",
-            "BLOOD.png"]
-    
+            "BLOOD.png",
+            "key.png"]
 def load_assets():
     global image_db
     assets_dir = "lpc_entry/png/walkcycle/" 

@@ -6,6 +6,8 @@ from copy import deepcopy
 import pygame
 import time
 from copy import deepcopy
+from sprites import Sprite
+import world
 
 dungeon_viz = []
 colors = [(randint(0,255), randint(0,255), randint(0,255)) for x in range(50)]
@@ -85,14 +87,14 @@ def stamp(x,y,s,m, ignore_tile=None):
 
 def adjacentcheck(r1, r2):
     #print("%s ==? %s" % (r1, r2))
-    if r1.x + r1.w == r2.x:
+    if r1.x + r1.w == r2.x and r1.y < r2.y + r2.h and r1.y + r1.h > r2.y:
         return (True, "lr")
     # r1.y
-    if r1.y == r2.y + r2.h:
+    if r1.y == r2.y + r2.h and r1.x < r2.x + r2.w and r1.x + r1.w > r2.x:
         return (True, "du")
-    if r1.x == r2.x + r2.w:
+    if r1.x == r2.x + r2.w and r1.y < r2.y + r2.h and r1.y + r1.h > r2.y:
         return (True, "rl")
-    if r1.y + r1.h == r2.y:
+    if r1.y + r1.h == r2.y and r1.x < r2.x + r2.w and r1.x + r1.w > r2.x:
         return (True, "ud")
    # print(r1)
     #print(r2)
@@ -317,10 +319,12 @@ def make_dungeon(size):
 
     line_hallways(size, dungeon)
     
+    keys = []
     for z in zones:
         make_zone_hallways(z.rooms, dungeon)
-    
-    return dungeon
+        place_key(z, keys)
+        
+    return dungeon, keys
     
 def line_hallways(size, dungeon):
     for y in range(size):
@@ -340,7 +344,17 @@ def stamp_rooms(rooms, dungeon):
     shrunk_rooms = map(shrink_room, rooms)
     
     for r in shrunk_rooms:
-        stamp(r.x, r.y, make_room(r.w, r.h, 0, 6), dungeon)    
+        stamp(r.x, r.y, make_room(r.w, r.h, 0, 6), dungeon) 
+
+def place_key(z, keys):   
+    r = choice(z.rooms)
+    for x in range(1):
+        x = randint(r.x + 4, r.x + r.w - 5) * 32
+        y = randint(r.y + 4, r.y + r.h - 5) * 32
+        key = Sprite(x, y, "key", simple_img=world.image_db["key"])
+        key.alive = True
+        keys.append(key)
+    
 def make_zone_hallways(rooms, dungeon):
     pairs = get_pairs(rooms)
     
