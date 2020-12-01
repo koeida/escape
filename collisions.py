@@ -30,6 +30,13 @@ def puke_hit(s1,s2, ss):
     s2.alive = False
     part.crazy_splatter(s2.x,s2.y,(180,0,0),randint(20,100))
     ss.insert(0, blood)
+
+def puke_borg_hit(s1,s2, ss):
+    if s2.deflected_timer != 0:
+        s2.alive = False
+        s1.alive = False
+        part.crazy_splatter(s2.x,s2.y,(0,125,0),randint(20,100))
+
     
 def deflect(s1, s2, sprites):
     if s2.deflected_timer == 0:
@@ -37,10 +44,10 @@ def deflect(s1, s2, sprites):
         s2.y = s2.last_y    
         s2.vy *= -1.25
         s2.vx *= -1.25
+        s2.deflected_timer = 20
 
 def get_key(s1, s2, sprites):
     s1.inventory.append(s2)
-    print("HEEEEEEEEEEEEEEEEEEEEY")
     sprites.remove(s2)
     
 def shrinkyrect(r, percent):
@@ -77,6 +84,7 @@ def check_collisions(nearby, sprites):
         
 collision_db = {("player", "monk"): keep_separated,
                 ("player", "puke"): puke_hit,
+                ("borgalon", "puke"): puke_borg_hit,
                 ("shield", "puke"): deflect,
                 ("shield", "borgalon"): deflect,
                 ("player", "wall"): keep_separated,
