@@ -3,7 +3,7 @@ import world
 import display
 import pygame
 
-from tools import distance,get_coords, clamp
+from tools import distance,get_coords, clamp, filter_dict
 from random import randint, uniform,choice
 
 import collisions
@@ -34,12 +34,13 @@ def tick_anim(s):
             
 def randomspawn(s, m, spawnpoints=[]):
     if spawnpoints == []:
-        spawnpoints = get_coords(m,0)
+        spawnpoints = get_coords(m, filter_dict(lambda x: x.floor_tile, world.TILES.data))
     bad = True
     while(bad):
         spawn_x, spawn_y = choice(spawnpoints)
+        gts = filter_dict(lambda x: x.floor_tile, world.TILES.data)
         try:
-            if m[spawn_y][spawn_x + 1] == 0 and m[spawn_y+1][spawn_x + 1] == 0 and m[spawn_y + 1][spawn_x] == 0:
+            if m[spawn_y][spawn_x + 1] in gts and m[spawn_y+1][spawn_x + 1] in gts and m[spawn_y + 1][spawn_x] in gts:
                 bad = False
         except:
             bad = True
@@ -47,28 +48,30 @@ def randomspawn(s, m, spawnpoints=[]):
         s.x = spawn_x * 32
         s.y = spawn_y * 32
     
-            
+
+def portal_tick(p, m, ts, sprites):
+        p.angle += 5
+        
 def generic_tick(p, m, ts, sprites):
     attempt_walk(p,m,ts)
     
 def tick_puke(p, m, ts, sprites):
     if p.deflected_timer > 0:
         p.deflected_timer -= 1
-    else:
-        if p.target.x > p.x:
-            p.vx += 0.1
-        if p.target.x < p.x:
-            p.vx -= 0.1
-        if p.target.y > p.y:
-            p.vy += 0.1
-            #p.facing ="down"
-        if p.target.y < p.y:
-            p.vy -=0.1
-            #p.facing ="up"
-        max_vel = 4
-        min_vel = -4
-        p.vy = clamp(p.vy, min_vel, max_vel)
-        p.vx = clamp(p.vx, min_vel, max_vel)
+    if p.target.x > p.x:
+        p.vx += 0.1
+    if p.target.x < p.x:
+        p.vx -= 0.1
+    if p.target.y > p.y:
+        p.vy += 0.1
+        #p.facing ="down"
+    if p.target.y < p.y:
+        p.vy -=0.1
+        #p.facing ="up"
+    max_vel = 4
+    min_vel = -4
+    p.vy = clamp(p.vy, min_vel, max_vel)
+    p.vx = clamp(p.vx, min_vel, max_vel)
     attempt_walk(p,m,ts)
     p.lifespan -= 1
 
