@@ -34,14 +34,17 @@ class Sprite:
         self.hitbox.x = 0
         self.hitbox.y = 0
         self.deflected_timer = 0
-
+        self.inventory = []
+        self.original_img = simple_img
+        self.angle = None
+        
     def get_rect(self):
         if self.simple_img != None:
             return self.simple_img.get_rect()
         else:
             aname, width, height, aframes, adelay = self.animations[self.current_animation][self.facing]
             img = world.image_db[aname]
-            ts = display.load_tileset(img, width, height)
+            ts = world.load_tileset(img, width, height)
             result = pygame.Rect(self.x, self.y, width, height)
             return result 
     def get_img(self):

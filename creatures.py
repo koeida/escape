@@ -3,7 +3,7 @@ import world
 import display
 import pygame
 
-from tools import distance,get_coords, clamp
+from tools import distance,get_coords, clamp, filter_dict
 from random import randint, uniform,choice
 
 import collisions
@@ -34,12 +34,13 @@ def tick_anim(s):
             
 def randomspawn(s, m, spawnpoints=[]):
     if spawnpoints == []:
-        spawnpoints = get_coords(m,0)
+        spawnpoints = get_coords(m, filter_dict(lambda x: x.floor_tile, world.TILES.data))
     bad = True
     while(bad):
         spawn_x, spawn_y = choice(spawnpoints)
+        gts = filter_dict(lambda x: x.floor_tile, world.TILES.data)
         try:
-            if m[spawn_y][spawn_x + 1] == 0 and m[spawn_y+1][spawn_x + 1] == 0 and m[spawn_y + 1][spawn_x] == 0:
+            if m[spawn_y][spawn_x + 1] in gts and m[spawn_y+1][spawn_x + 1] in gts and m[spawn_y + 1][spawn_x] in gts:
                 bad = False
         except:
             bad = True
@@ -47,7 +48,10 @@ def randomspawn(s, m, spawnpoints=[]):
         s.x = spawn_x * 32
         s.y = spawn_y * 32
     
-            
+
+def portal_tick(p, m, ts, sprites):
+        p.angle += 5
+        
 def generic_tick(p, m, ts, sprites):
     attempt_walk(p,m,ts)
     

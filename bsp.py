@@ -32,7 +32,7 @@ def split_horiz(p, min_size):
     a2 = Area(p.x + width, p.y, p.w - width, p.h, "horiz")
     return (a1,a2)
 
-def split_area(a, cur_depth, max_depth=11, min_size=20):
+def split_area(a, cur_depth, max_depth=5, min_size=9):
     p = a.name # p == parent
     #if randint(0,5) == 0 and cur_depth > 3:
         #return None
@@ -44,7 +44,13 @@ def split_area(a, cur_depth, max_depth=11, min_size=20):
             a1,a2 = split_vert(p,min_size) 
         else:
             a1,a2 = split_horiz(p, min_size)
-
+        
+        if (a2.w < min_size or
+            a2.h < min_size or
+            a1.w < min_size or
+            a1.h < min_size):
+            return None
+            
         c1 = Node(a1, a)
         c2 = Node(a2, a)
 
