@@ -1,7 +1,7 @@
 from random import choice, randint
 import bsp
 import itertools
-from tools import first, two_chunk
+from tools import first, two_chunk, filter_dict, map_dict
 from copy import deepcopy
 import pygame
 import time
@@ -22,20 +22,23 @@ class Zone:
     def __init__ (self, name, rooms):
         self.name = name
         self.rooms = rooms
+        self.floor_tile = choice(filter_dict(lambda v: v.floor_tile, world.TILES.data))
+        mapped = map_dict(lambda k,v: (k, v.matching_tile), world.TILES.data)
+        filtered = list(filter(lambda t: t[1] != None, mapped))
+        print("jadkLwj;jwoIDJWODJ;jwdoWJ;O" + str(filtered))
+        self.wall_tile, self.top_tile = choice(filtered)
         
-def make_room(w,h, floor_tile=0, wall_tile=1):
+def make_room(w,h, floor_tile=0, wall_tile=1, top_tile=6):
     """Returns a list of lists of tile numbers"""
     results = []
-    top_tile = 6
-    top_corner = 1
+    top_corner = wall_tile
     # Top row is always all 1s: 4 --> [1,1,1,1]
     top_row = [top_corner] + [top_tile for x in range(w - 2)] + [top_corner] #make_list_of_1s(w) 
     results.append(top_row)
     for x in range(h - 2):
-        side_wall = 1
-        middle_row = make_middle(w, side_wall, floor_tile)
+        middle_row = make_middle(w, wall_tile, floor_tile)
         results.append(middle_row)
-    bottom_row = [wall_tile for x in range(w)]
+    bottom_row = [top_tile for x in range(w)]
     results.append(bottom_row)
     # Middle rows, first tile is 1
     v_cord = []
@@ -258,15 +261,16 @@ def make_graph(zone_pairs):
 def connect_zones(zones, node):
     walk = done_walk(node, len(zones))
     walk = list(map(lambda n: n.name, walk))
+    end = zones[walk[-1]]
+    start = zones[walk[0]]
     chunks = two_chunk(walk)
-    print(walk)
     results = []
     for c in chunks:
        pairs = adjacent_zone_rooms(zones[c[0]], zones[c[1]])
        r1, r2  = choice(pairs)
        direction = adjacentcheck(r1,r2)[1]
        results.append((r1, r2, direction))
-    return results
+    return results, start, end
     
 def done_walk(cur_node, length):
     history = []
@@ -311,9 +315,9 @@ def make_dungeon(size):
     n = make_graph(azones)
     
     for z in zones:
-        stamp_rooms(z.rooms, dungeon)
+        stamp_rooms(z, dungeon)
         
-    joined_rooms = connect_zones(zones, n)
+    joined_rooms, start, end = connect_zones(zones, n)
     for r1, r2, atype in joined_rooms:   
         stamp_hallway(shrink_room(r1), shrink_room(r2), atype,dungeon, 12, 10)
 
@@ -324,7 +328,23 @@ def make_dungeon(size):
         make_zone_hallways(z.rooms, dungeon)
         place_key(z, keys)
         
-    return dungeon, keys
+    return dungeon, keys, start, end
+    
+def add_shadow(d, sprites):
+    for y in range(len(d)):
+        for x in range(len(d[0])):
+            floor_tiles = filter_dict(lambda x: x.floor_tile, world.TILES.data)
+            if d[y][x] in floor_tiles:
+                if d[y - 1][x] not in floor_tiles and d[y][x + 1] not in floor_tiles:
+                    shadow = Sprite(x * 32, y * 32, "shadow", simple_img=world.image_db["cornershadow"])
+                    sprites.insert(0, shadow)
+                elif d[y - 1][x] not in floor_tiles:
+                    shadow = Sprite(x * 32, y * 32, "shadow", simple_img=world.image_db["topshadow"])
+                    sprites.insert(0, shadow)
+                elif d[y][x + 1] not in floor_tiles:
+                    shadow = Sprite(x * 32, y * 32, "shadow", simple_img=world.image_db["sideshadow"])
+                    sprites.insert(0, shadow)
+                
     
 def line_hallways(size, dungeon):
     for y in range(size):
@@ -340,19 +360,21 @@ def line_hallways(size, dungeon):
             if dungeon[y][x] == 10:
                 dungeon[y][x] = 4
                 
-def stamp_rooms(rooms, dungeon):
-    shrunk_rooms = map(shrink_room, rooms)
+def stamp_rooms(z, dungeon):
+    shrunk_rooms = map(shrink_room, z.rooms)
     
     for r in shrunk_rooms:
-        stamp(r.x, r.y, make_room(r.w, r.h, 0, 6), dungeon) 
+        stamp(r.x, r.y, make_room(r.w, r.h, z.floor_tile, z.wall_tile, z.top_tile), dungeon) 
 
 def place_key(z, keys):   
     r = choice(z.rooms)
     for x in range(1):
         x = randint(r.x + 4, r.x + r.w - 5) * 32
         y = randint(r.y + 4, r.y + r.h - 5) * 32
-        key = Sprite(x, y, "key", simple_img=world.image_db["key"])
+        key_anim = { "walking": {"down": ("keyanimation", 32, 32, [0,1,2,3,4], 4)}}
+        key = Sprite(x, y, "key", key_anim)
         key.alive = True
+        key.hitpoints = 2
         keys.append(key)
     
 def make_zone_hallways(rooms, dungeon):
@@ -415,7 +437,7 @@ def make_zone_keeg(rooms, dungeon, viz_screen=None, room_list=[]):
     shrink_rooms(rooms)
 
     for r in rooms:
-        stamp(r.x, r.y, make_room(r.w, r.h, 0, 6), dungeon)
+        stamp(r.x, r.y, make_room(r.w, r.h, 0, 7), dungeon)
     for p in pairs:
         room_pair, adj_data = p
         r1, r2 = room_pair

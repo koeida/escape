@@ -1,7 +1,7 @@
 from gamemap import gen_test_map
 from input import get_input
-from random import randint, uniform
-from tools import get_coords, distance
+from random import randint, uniform, choice
+from tools import get_coords, distance, filter_dict
 import collisions
 import creatures
 import display
@@ -29,8 +29,10 @@ def get_input(player, m, ts, cs):
     
     oldfacing = player.facing
     
+    ks = list(filter(lambda i: i.kind == "key", player.inventory))
+    
     if keys[pygame.K_t]:
-        key = list(filter(lambda x: x.kind == "key", cs))[0]
+        key = list(filter(lambda x: x.kind == "portal", cs))[0]
         player.x = key.x + 5
         player.y = key.y + 5
     if w:
@@ -45,7 +47,7 @@ def get_input(player, m, ts, cs):
     if a:
         player.vx = -speed
         player.facing = "left"
-    if o:
+    if o and ks != []:
         x = int((player.x + 32) / 32)
         y = int((player.y + 32)/ 32)
         adjacenttiles = ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1), (y + 1, x + 1), (y - 1, x - 1), (y + 1, x - 1), (y - 1, x + 1))
@@ -53,7 +55,11 @@ def get_input(player, m, ts, cs):
         if doors != []:
             dy, dx = doors[0]
             m[dy][dx] = 13
-            
+            ks[0].hitpoints -= 1
+            if ks[0].hitpoints == 0:
+                player.inventory.remove(ks[0])
+        
+        
     if not s and not w:
         player.vy = 0
     if not a and not d:
@@ -94,11 +100,11 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
     
-    game_map, keys = dungeongen.make_dungeon(140)
+    game_map, keys, start, end = dungeongen.make_dungeon(140)
     
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
-    ts = display.load_tileset(tsimg, 32, 32)        
+    ts = world.load_tileset(tsimg, 32, 32)        
     panim = {
              "standing": {"up": ("dude", 64, 64, [0], 5),
                          "left": ("dude", 64, 64, [9], 5),
@@ -120,15 +126,25 @@ def main(screen):
     
     
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
-
-    player = creatures.Sprite(400, 400, "player", panim)
+    room = dungeongen.shrink_room(choice(start.rooms))
+    py = randint(room.y + 1, room.y + room.h - 1)
+    px = randint(room.x + 1, room.x + room.w - 1)
+    player = creatures.Sprite(px * 32, py * 32, "player", panim)
     player.tick = creatures.tick_player
     #player.x = 1000
     #player.y = 1000
-    creatures.randomspawn(player,game_map)
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     player.hitpoints = 100
     enemy = creatures.Sprite(600, 600, "monk", panim)
+    assert(start.rooms != end.rooms)
+    room2 = dungeongen.shrink_room(choice(end.rooms))
+    portaly = randint(room2.y + 1, room2.y + room2.h - 1)
+    portalx = randint(room2.x + 1, room2.x + room2.w - 1)
+    portal = creatures.Sprite(portalx * 32, portaly * 32, "portal", simple_img=world.image_db["portal"])
+    portal.tick = creatures.portal_tick
+    portal.original_img = portal.simple_img
+    portal.angle = 0
+
     
     
     
@@ -146,7 +162,11 @@ def main(screen):
 
     sprites = [player, shield] + keys
     
-    spawnpoints = get_coords(game_map,0)
+    sprites.append(portal)
+     
+    dungeongen.add_shadow(game_map, sprites)
+    
+    spawnpoints = get_coords(game_map, filter_dict(lambda x: x.floor_tile, world.TILES.data))
     for x in range(50):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)
