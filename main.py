@@ -89,9 +89,10 @@ def gen_test_map():
         
     
     return game_map
-
-def game_mode():   
-    clock.tick(60)
+def dialogue_mode():
+    pass
+def game_mode(timers, player, game_map, ts, sprites, sheild):   
+    
     timers.update_timers()
     
     mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -236,7 +237,14 @@ def main(screen):
     timers.add_timer(10, lambda: cam.set_shake(0))
     
     while(running):
+        clock.tick(60)
         
+        if world.mode == "game":
+            game_mode()
+        elif world.mode == "dialogue":
+            dialogue_mode()
+        else:
+            assert(False)
                 
         screen.fill((0,0,0))        
         display.draw_interface(screen, cam, ts, game_map, sprites)
