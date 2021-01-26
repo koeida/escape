@@ -89,7 +89,49 @@ def gen_test_map():
         
     
     return game_map
-   
+
+def game_mode():   
+    clock.tick(60)
+    timers.update_timers()
+    
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    
+      
+    get_input(player, game_map, ts, sprites)       
+    
+    for s in sprites:
+        creatures.tick_anim(s)
+        if s.kind != "wall":
+            if s.tick != None:
+                s.tick(s, game_map, ts, sprites)
+                #creaures.attempt_walk(s, game_map, ts)
+    for p in part.particles:
+        part.tick_particle(p)
+        if p.lifespan <= 0:
+            part.particles.remove(p)
+        
+    shield.x = player.x - 17
+    shield.y = player.y - 10
+    #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
+    shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
+    
+    if player.hitpoints <= 0:
+        player.alive = False
+        shield.alive = False
+    
+    nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
+    collisions.check_collisions(nearby_sprites, sprites)
+
+    sprites = list(filter(lambda s: s.alive, sprites))
+        
+    for event in pygame.event.get():
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            part.crazy_splatter(player.x + 50, player.y + 50, (255,0,0))
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                running = False
 
 def main(screen):   
     clock = pygame.time.Clock()
@@ -138,8 +180,8 @@ def main(screen):
     enemy = creatures.Sprite(600, 600, "monk", panim)
     assert(start.rooms != end.rooms)
     room2 = dungeongen.shrink_room(choice(end.rooms))
-    portaly = randint(room2.y + 1, room2.y + room2.h - 1)
-    portalx = randint(room2.x + 1, room2.x + room2.w - 1)
+    portaly = randint(room2.y + 1, room2.y + room2.h - 2)
+    portalx = randint(room2.x + 1, room2.x + room2.w - 2)
     portal = creatures.Sprite(portalx * 32, portaly * 32, "portal", simple_img=world.image_db["portal"])
     portal.tick = creatures.portal_tick
     portal.original_img = portal.simple_img
@@ -194,47 +236,7 @@ def main(screen):
     timers.add_timer(10, lambda: cam.set_shake(0))
     
     while(running):
-        clock.tick(60)
-        timers.update_timers()
         
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-        
-          
-        get_input(player, game_map, ts, sprites)       
-        
-        for s in sprites:
-            creatures.tick_anim(s)
-            if s.kind != "wall":
-                if s.tick != None:
-                    s.tick(s, game_map, ts, sprites)
-                    #creaures.attempt_walk(s, game_map, ts)
-        for p in part.particles:
-            part.tick_particle(p)
-            if p.lifespan <= 0:
-                part.particles.remove(p)
-            
-        shield.x = player.x - 17
-        shield.y = player.y - 10
-        #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
-        shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
-        
-        if player.hitpoints <= 0:
-            player.alive = False
-            shield.alive = False
-        
-        nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
-        collisions.check_collisions(nearby_sprites, sprites)
-
-        sprites = list(filter(lambda s: s.alive, sprites))
-            
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                part.crazy_splatter(player.x + 50, player.y + 50, (255,0,0))
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    running = False
                 
         screen.fill((0,0,0))        
         display.draw_interface(screen, cam, ts, game_map, sprites)

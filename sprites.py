@@ -29,7 +29,7 @@ class Sprite:
         self.next_anim = None
         self.tick = null_tick
         self.alive = True
-        self.hitpoints = 100
+        self.hitpoints = 5
         self.hitbox = self.get_rect()
         self.hitbox.x = 0
         self.hitbox.y = 0
