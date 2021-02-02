@@ -5,6 +5,7 @@ TILE_WIDTH = 32
 TILE_HEIGHT = 32
 FPS = 60
 mode = "game"
+dialogue_message = ""
 image_db = ["BODY_male.png",
             "LEGS_robe_skirt.png",
             "boganim.png",
@@ -23,7 +24,8 @@ image_db = ["BODY_male.png",
             "dbr.png",
             "dbbl.png",
             "dbb.png",
-            "dbbr.png"]
+            "dbbr.png",
+            "stranger.png"]
             
 def tile(walkable=True, floor_tile=False, matching_tile=None):
     results = TileInfo()

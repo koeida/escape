@@ -1,7 +1,7 @@
 from gamemap import gen_test_map
 from input import get_input
 from random import randint, uniform, choice
-from tools import get_coords, distance, filter_dict
+from tools import get_coords, distance, filter_dict, first
 import collisions
 import creatures
 import display
@@ -26,7 +26,7 @@ def get_input(player, m, ts, cs):
     d = keys[pygame.K_d]
     a = keys[pygame.K_a]
     o = keys[pygame.K_o]
-    
+    m = keys[pygame.K_m]  
     oldfacing = player.facing
     
     ks = list(filter(lambda i: i.kind == "key", player.inventory))
@@ -58,8 +58,10 @@ def get_input(player, m, ts, cs):
             ks[0].hitpoints -= 1
             if ks[0].hitpoints == 0:
                 player.inventory.remove(ks[0])
-        
-        
+    if m:
+        if distance(player, first(lambda s: s.kind == "stranger", cs)) < 50:
+            world.mode = "dialogue"
+            world.dialogue_message = "I'm cold. Do you have a coat? if you do, then can you please give me it? then I would be less cold and forever in your debt"
     if not s and not w:
         player.vy = 0
     if not a and not d:
@@ -90,8 +92,22 @@ def gen_test_map():
     
     return game_map
 def dialogue_mode():
-    pass
-def game_mode(timers, player, game_map, ts, sprites, sheild):   
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            world.mode = "game"
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                world.mode = "game"
+            if event.key == pygame.K_n:
+                lpb = 56
+                boxes = display.text_lines(lpb, world.dialogue_message)
+                print(boxes)
+                start = len(boxes[0])
+                if len(boxes) > 1:
+                    world.dialogue_message = world.dialogue_message[start:]  
+                else:
+                    world.mode = "game"
+def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):   
     
     timers.update_timers()
     
@@ -133,7 +149,8 @@ def game_mode(timers, player, game_map, ts, sprites, sheild):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 running = False
-
+        
+    return(sprites, running)
 def main(screen):   
     clock = pygame.time.Clock()
     running = True
@@ -220,6 +237,9 @@ def main(screen):
         borgalon.target = player
         borgalon.tick = creatures.tick_borgalon
         sprites.append(borgalon)
+    
+    stranger = creatures.Sprite(player.x + 100, player.y, "stranger", simple_img=world.image_db["stranger"])
+    sprites.append(stranger)
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
 
     
@@ -240,7 +260,7 @@ def main(screen):
         clock.tick(60)
         
         if world.mode == "game":
-            game_mode()
+            sprites, running = game_mode(timers, player, game_map, ts, sprites, shield, swidth, running)
         elif world.mode == "dialogue":
             dialogue_mode()
         else:

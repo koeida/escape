@@ -170,10 +170,11 @@ def draw_interface(screen, cam, ts, game_map, sprites):
     # Draw the camera
     cam_surface = render_camera(cam,  ts, game_map, sprites)
     screen.blit(cam_surface, (cam.x, cam.y))
-    dialoguebox(screen, 100, 100, 200, 100, "Hello, and welcome to Grilby's. This is my long and tragic tale...")
     player = first(lambda s: s.kind == "player", sprites) 
     if player != None:
         hitbar(100, player.hitpoints,screen)
+    if world.mode == "dialogue":
+        dialoguebox(screen, 100, 100, 200, 100, world.dialogue_message)
     # TASK: Maybe draw a pretty border around the camera, I dunno
     # TASK: Draw player stats
     # TASK: Draw inventory? 
@@ -205,6 +206,7 @@ def render_shield(mouse_x, mouse_y, swidth):
 
 def text_lines(lpl, message):
     lines = []
+    message += " " 
     while message != "":
         line = message[:lpl]
         other = ""
@@ -221,7 +223,9 @@ def dialoguebox(screen, x, y, w, h, message):
     pygame.font.init()
     
     myfont = pygame.font.SysFont('Lucida Console', 18)
-    
+    lpb = 56
+    boxes = text_lines(lpb, message)
+    message = boxes[0]
     message += " "
     rx, ry, rw, rh = rect = (x - 10, y - 10, w + 20, h + 20)
     screen.fill((0, 0, 0), (rx + 32, ry + 32, rw - 64, rh - 64))
