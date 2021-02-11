@@ -3,20 +3,81 @@ from itertools import combinations
 import particles as part
 from random import randint
 from sprites import Sprite
+import gamemap
 import world
 
+pygame.mixer.init()
+coindrop = pygame.mixer.Sound("coin-drop-4.wav")
+keypickup = pygame.mixer.Sound("key_pickup.wav")
+        
+def attempt_v_move2(s, vx, vy,  m, ts):
+    s.last_x = s.x
+    s.last_y = s.y
+
+    s.x += vx
+    s.y += vy
+
+    hx = s.x + s.hitbox.x 
+    hy = s.y + s.hitbox.y
+
+    left = int(hx / world.TILE_WIDTH)
+    right = int((hx + s.hitbox.width) / world.TILE_WIDTH)
+    top = int(hy / world.TILE_WIDTH )
+    bottom = int((hy + s.hitbox.height) / world.TILE_WIDTH )
+    coords = [(left, top), (left, bottom), (right, top), (right, bottom)]
+
+    collision = False
+    for tx, ty in coords:
+        if not gamemap.walkable(tx, ty, m, ts):
+            collision = True  
+
+    if collision:
+        s.x = s.last_x
+        s.y = s.last_y
+        return
+    
+
+def attempt_move(s, m, ts):
+    attempt_v_move2(s, s.vx, 0, m, ts)
+    attempt_v_move2(s, 0, s.vy, m, ts)
+
 def tick_blood(p, m, ts, sprites):
-    pass
+    pass    
+
+def tick_coin(coin, m, ts, sprites):
+    attempt_move(coin, m, ts)
+    coin.vx = pull(coin.vx, 0.1)
+    coin.vy = pull(coin.vy, 0.1)
+    
+def pull(x, amt):
+    if x > 0:
+        x = x-amt
+        if x < 0:
+            x = 0
+    elif x < 0:
+        x = x+amt
+    else:
+        x = 0
+    return x
+    
 
 def make_blood_splatter(x, y):
-    blood_anim = { "walking": {"down": ("BLOOD", 32, 32, [0], 3)}}
     blood = Sprite(x, y, "BLOOD", simple_img=world.image_db["BLOOD"])
     blood.target = None
     blood.vy = 0
     blood.vx = 0
     blood.tick = tick_blood
     blood.alive = True
-    return blood
+    return blood    
+    
+def make_coin(x, y):
+    coin = Sprite(x, y, "coin", simple_img=world.image_db["coin"])
+    coin.target = None
+    coin.vy = randint(-3, 3)
+    coin.vx = randint(-3, 3)
+    coin.tick = tick_coin
+    coin.alive = True
+    return coin
 
 def keep_separated(s1, s2, sprites):
     s1.x = s1.last_x
@@ -35,6 +96,9 @@ def puke_borg_hit(s1,s2, ss):
     if s2.deflected_timer != 0:
         s2.alive = False
         s1.alive = False
+        coin = make_coin(s1.x+50, s1.y+32)
+        coindrop.play()
+        ss.append(coin)
         part.crazy_splatter(s2.x,s2.y,(0,125,0),randint(20,100))
 
     
@@ -48,6 +112,7 @@ def deflect(s1, s2, sprites):
 
 def get_key(s1, s2, sprites):
     s1.inventory.append(s2)
+    keypickup.play()
     sprites.remove(s2)
     
 def shrinkyrect(r, percent):
@@ -89,3 +154,4 @@ collision_db = {("player", "monk"): keep_separated,
                 ("shield", "borgalon"): deflect,
                 ("player", "wall"): keep_separated,
                 ("player", "key"): get_key}
+             

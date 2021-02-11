@@ -15,7 +15,8 @@ image_db = ["BODY_male.png",
             "cornershadow.png",
             "topshadow.png",
             "sideshadow.png",
-            "portal.png"]
+            "portal.png",
+            "coin.png"]
 
 def tile(walkable=True, floor_tile=False, matching_tile=None):
     results = TileInfo()
