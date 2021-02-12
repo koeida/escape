@@ -14,7 +14,11 @@ import world
 import dungeongen
 import particles as part
 from pygame.locals import *
-    
+
+pygame.mixer.init()
+dooropen = pygame.mixer.Sound("door-open.wav")
+dooropen.set_volume(0.3)
+
 def get_input(player, m, ts, cs):
     keys = pygame.key.get_pressed()
     speed = 8
@@ -56,6 +60,7 @@ def get_input(player, m, ts, cs):
             dy, dx = doors[0]
             m[dy][dx] = 13
             ks[0].hitpoints -= 1
+            dooropen.play()
             if ks[0].hitpoints == 0:
                 player.inventory.remove(ks[0])
         

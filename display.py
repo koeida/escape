@@ -169,6 +169,16 @@ def render_camera(camera, ts, m, sprites):
     result = render_cam_particles(result, camera, ts, m,sprites)
     return result
     
+def blit_text(screen, text, x, y, size, color=(255,255,255), font_type = None):
+    text = str(text)
+    if font_type == None:
+        font = pygame.font.SysFont("Terminal", size)
+    else:
+        font = pygame.font.Font(font_type, size)
+        
+    text = font.render(text, True, color)
+    screen.blit(text, (x,y))
+    
 def draw_interface(screen, cam, ts, game_map, sprites):
     # Draw the camera
     cam_surface = render_camera(cam,  ts, game_map, sprites)
@@ -178,6 +188,8 @@ def draw_interface(screen, cam, ts, game_map, sprites):
         hitbar(100, player.hitpoints,screen)
     # TASK: Maybe draw a pretty border around the camera, I dunno
     # TASK: Draw player stats
+    screen.blit(world.image_db["coin"], (0, 510))
+    blit_text(screen, player.money, 50, 512, 48)
     # TASK: Draw inventory? 
     # TASK: Brainstorm other things that should go on the screen
     

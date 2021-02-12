@@ -9,6 +9,10 @@ import world
 pygame.mixer.init()
 coindrop = pygame.mixer.Sound("coin-drop-4.wav")
 keypickup = pygame.mixer.Sound("key_pickup.wav")
+playerhurt = pygame.mixer.Sound("player-hurt.wav")
+borghurt = pygame.mixer.Sound("borg-hurt.wav")
+keypickup.set_volume(0.25)
+playerhurt.set_volume(0.25)
         
 def attempt_v_move2(s, vx, vy,  m, ts):
     s.last_x = s.x
@@ -90,6 +94,7 @@ def puke_hit(s1,s2, ss):
     s1.hitpoints -= 1
     s2.alive = False
     part.crazy_splatter(s2.x,s2.y,(180,0,0),randint(20,100))
+    playerhurt.play()
     ss.insert(0, blood)
 
 def puke_borg_hit(s1,s2, ss):
@@ -97,7 +102,7 @@ def puke_borg_hit(s1,s2, ss):
         s2.alive = False
         s1.alive = False
         coin = make_coin(s1.x+50, s1.y+32)
-        coindrop.play()
+        borghurt.play()
         ss.append(coin)
         part.crazy_splatter(s2.x,s2.y,(0,125,0),randint(20,100))
 
@@ -113,6 +118,11 @@ def deflect(s1, s2, sprites):
 def get_key(s1, s2, sprites):
     s1.inventory.append(s2)
     keypickup.play()
+    sprites.remove(s2)
+        
+def get_coin(s1, s2, sprites):
+    s1.money += 1
+    coindrop.play()
     sprites.remove(s2)
     
 def shrinkyrect(r, percent):
@@ -153,5 +163,6 @@ collision_db = {("player", "monk"): keep_separated,
                 ("shield", "puke"): deflect,
                 ("shield", "borgalon"): deflect,
                 ("player", "wall"): keep_separated,
-                ("player", "key"): get_key}
+                ("player", "key"): get_key,
+                ("player", "coin"): get_coin}
              
