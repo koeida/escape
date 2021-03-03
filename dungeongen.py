@@ -2,12 +2,12 @@ from random import choice, randint
 import bsp
 import itertools
 from tools import first, two_chunk, filter_dict, map_dict
-from copy import deepcopy
 import pygame
 import time
 from copy import deepcopy
 from sprites import Sprite
 import world
+
 
 dungeon_viz = []
 colors = [(randint(0,255), randint(0,255), randint(0,255)) for x in range(50)]
@@ -22,11 +22,6 @@ class Zone:
     def __init__ (self, name, rooms):
         self.name = name
         self.rooms = rooms
-        self.floor_tile = choice(filter_dict(lambda v: v.floor_tile, world.TILES.data))
-        mapped = map_dict(lambda k,v: (k, v.matching_tile), world.TILES.data)
-        filtered = list(filter(lambda t: t[1] != None, mapped))
-        print("jadkLwj;jwoIDJWODJ;jwdoWJ;O" + str(filtered))
-        self.wall_tile, self.top_tile = choice(filtered)
         
 def make_room(w,h, floor_tile=0, wall_tile=1, top_tile=6):
     """Returns a list of lists of tile numbers"""
@@ -240,8 +235,7 @@ def make_graph(zone_pairs):
         assert(id(z1n.neighbors) != id(z2n.neighbors))
         z1n.neighbors.add(z2n)
         z2n.neighbors.add(z1n)
-        
-        
+       
         #print(z1n.neighbors)
         
         #print("joining %s and %s" % (z1n.name, z2n.name))
@@ -264,6 +258,7 @@ def connect_zones(zones, node):
     end = zones[walk[-1]]
     start = zones[walk[0]]
     chunks = two_chunk(walk)
+
     results = []
     for c in chunks:
        pairs = adjacent_zone_rooms(zones[c[0]], zones[c[1]])
@@ -360,7 +355,8 @@ def line_hallways(size, dungeon):
         for x in range(size):
             try:
                 adjacenttiles = [dungeon[y + 1][x], dungeon[y - 1][x], dungeon[y][x + 1], dungeon[y][x - 1], dungeon[y + 1][x + 1], dungeon[y - 1][x - 1], dungeon[y + 1][x - 1], dungeon[y - 1][x + 1]]
-                if dungeon[y][x] == 3 and 10 in adjacenttiles: 
+
+                if dungeon[y][x] == 3 and 10 in adjacenttiles:
                    dungeon[y][x] = 1
             except:
                 pass

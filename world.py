@@ -1,6 +1,7 @@
 import pygame
 from collections import namedtuple
 
+
 TILE_WIDTH = 32
 TILE_HEIGHT = 32
 FPS = 60
@@ -10,6 +11,11 @@ image_db = ["BODY_male.png",
             "boganim.png",
             "puke.png",
             "BLOOD.png",
+            "VLATION.png",
+            "bloodyloodies.png",
+            "Gloub.png",
+            "Skreets.png",
+            "skreettung.png",
             "key.png",
             "keyanimation.png",
             "cornershadow.png",

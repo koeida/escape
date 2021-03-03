@@ -5,6 +5,7 @@ from random import randint
 from sprites import Sprite
 import world
 
+
 def tick_blood(p, m, ts, sprites):
     pass
 
@@ -28,27 +29,41 @@ def puke_hit(s1,s2, ss):
     blood = make_blood_splatter(s1.x + 15, s1.y + 25)
     s1.hitpoints -= 1
     s2.alive = False
-    part.crazy_splatter(s2.x,s2.y,(180,0,0),randint(20,100))
+    part.crazy_splatter(s2.x,s2.y,(127,127,0),randint(20,100))
     ss.insert(0, blood)
+    
+def wildbounce(s1,s2,sprites):
+    if s2.is_wild == False:
+        s2.x = s2.last_x
+        s2.y = s2.last_y   
+        s2.vy *= randint(-20,20)
+        s2.vx *= randint(-20,20)
+        s2.is_wild = True
+        s1.hitpoints -= 1
+        
+    
+def beglobbed(s1,s2,sprites):
+    s1.hitpoints-=1
+    
 
 def puke_borg_hit(s1,s2, ss):
     if s2.deflected_timer != 0:
         s2.alive = False
-        s1.alive = False
-        part.crazy_splatter(s2.x,s2.y,(0,125,0),randint(20,100))
+        s1.hitpoints -=1
+        part.crazy_splatter(s2.x,s2.y,(127,127,0),randint(20,100))
 
     
 def deflect(s1, s2, sprites):
-    if s2.deflected_timer == 0:
-        s2.x = s2.last_x
-        s2.y = s2.last_y    
-        s2.vy *= -1.25
-        s2.vx *= -1.25
-        s2.deflected_timer = 20
+    s2.x = s2.last_x
+    s2.y = s2.last_y    
+    s2.vy *= -20
+    s2.vx *= -20
+    s2.deflected_timer = 100
 
 def get_key(s1, s2, sprites):
     s1.inventory.append(s2)
     sprites.remove(s2)
+
     
 def shrinkyrect(r, percent):
     shrunkwidth = (r.width/100) * percent
@@ -85,7 +100,18 @@ def check_collisions(nearby, sprites):
 collision_db = {("player", "monk"): keep_separated,
                 ("player", "puke"): puke_hit,
                 ("borgalon", "puke"): puke_borg_hit,
+                ("player", "bloodyloodies"): puke_hit,
+                ("vlation", "bloodyloodies"): puke_borg_hit,
+                ("vlation", "puke"): puke_borg_hit,
+                ("borgalon", "bloodyloodies"): puke_borg_hit,
+                ("shield", "bloodyloodies"): deflect,
                 ("shield", "puke"): deflect,
+                ("gloub", "puke"): wildbounce,
+                ("gloub", "bloodyloodies"): wildbounce,
+                ("player", "gloub"): beglobbed,
+                ("player", "skreet"): beglobbed,
                 ("shield", "borgalon"): deflect,
-                ("player", "wall"): keep_separated,
+                ("skreet", "puke"): puke_borg_hit,
+                ("skreet", "bloodyloodies"): puke_borg_hit,
+                ("player", "wall"): keep_separated}
                 ("player", "key"): get_key}

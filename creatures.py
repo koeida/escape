@@ -56,20 +56,26 @@ def generic_tick(p, m, ts, sprites):
     attempt_walk(p,m,ts)
     
 def tick_puke(p, m, ts, sprites):
-    if p.deflected_timer > 0:
-        p.deflected_timer -= 1
-    if p.target.x > p.x:
+    hx = p.target.x + 31
+    hy = p.target.y + 43 
+    
+    if hx > p.x:
         p.vx += 0.1
-    if p.target.x < p.x:
+    if hx < p.x:
         p.vx -= 0.1
-    if p.target.y > p.y:
+    if hy > p.y:
         p.vy += 0.1
         #p.facing ="down"
-    if p.target.y < p.y:
+    if hy < p.y:
         p.vy -=0.1
         #p.facing ="up"
-    max_vel = 4
-    min_vel = -4
+    max_vel = 2
+    min_vel = -2    
+    if p.deflected_timer > 0 or p.is_wild == True:
+        p.deflected_timer -= 1
+        max_vel = 5
+        min_vel = -5
+
     p.vy = clamp(p.vy, min_vel, max_vel)
     p.vx = clamp(p.vx, min_vel, max_vel)
     attempt_walk(p,m,ts)
@@ -115,18 +121,157 @@ def tick_borgalon(borgalon, m, ts, sprites):
             puke_anim = { "walking": {"down": ("puke", 20, 20, [0, 1], 3)}}
             puke = Sprite(borgalon.x, borgalon.y, "puke", puke_anim)
             puke.target = borgalon.target
-            puke.vy = 3
+            puke.vy = uniform(-2,4)
             puke.vx = uniform(-5, 5)
             puke.lifespan = randint(50,250)
             puke.tick = tick_puke
+            puke.is_wild = False
             sprites.append(puke)
         if distance(borgalon,borgalon.target) >=500:
             borgalon.mode = "chase"
         #borgalon.facing = "down"
     #if distance(borgalon,borgalon.target) < 300:
     #    borgalon.targeszt = borgalon.target.y - 100
+def tick_vlation(vlation, m, ts, sprites):
+    if vlation.mode == "chase":
+        if vlation.target.x > vlation.x:
+            vlation.vx = 2
+            vlation.facing ="right"
+        if vlation.target.x < vlation.x:
+            vlation.vx = -2
+            vlation.facing ="left"
+        if vlation.target.y > vlation.y:
+            vlation.vy = 2
+            #vlation.facing ="down"
+        if vlation.target.y < vlation.y:
+            vlation.vy = -2
+            #vlation.facing ="up"
+        attempt_walk(vlation, m, ts)
         
+        if distance(vlation,vlation.target) <= 200:
+            vlation.mode = "attack"
+            vlation.vx = 0
+            vlation.vy = 0
+        if distance(vlation,vlation.target) >= 1000:
+            vlation.mode = "cheel"
+            
+    if vlation.mode == "cheel":
+        if distance(vlation,vlation.target) <=500:
+            vlation.mode = "chase"
+            
+            
+    if vlation.mode == "attack":
+        if randint(1,5) == 1:
+            loogie_anim = { "walking": {"down": ("bloodyloodies", 20, 20, [0, 1], 3)}}
+            bloodyloodie = Sprite(vlation.x, vlation.y, "bloodyloodies", loogie_anim)
+            bloodyloodie.target = vlation.target
+            bloodyloodie.vy = 3
+            bloodyloodie.vx = uniform(-3, 3)
+            bloodyloodie.lifespan = randint(50,250)
+            bloodyloodie.tick = tick_puke
+            bloodyloodie.is_wild = False
+            sprites.append(bloodyloodie)
+        if distance(vlation,vlation.target) >=500:
+            vlation.mode = "chase"  
+            
+def tick_skreet(skreet, m, ts, sprites):
+    if skreet.mode == "chase":
+        if skreet.target.x > skreet.x:
+            skreet.vx = 2
+            skreet.facing ="right"
+        if skreet.target.x < skreet.x:
+            skreet.vx = -2
+            skreet.facing ="left"
+        if skreet.target.y > skreet.y:
+            skreet.vy = 2
+            #skreet.facing ="down"
+        if skreet.target.y < skreet.y:
+            skreet.vy = -2
+            #skreet.facing ="up"
+        attempt_walk(skreet, m, ts)
+        
+        if distance(skreet,skreet.target) <= 200:
+            skreet.mode = "attack"
+            skreet.vx = 0
+            skreet.vy = 0
+        if distance(skreet,skreet.target) >= 1000:
+            skreet.mode = "cheel"
+            
+            
+    if skreet.mode =="attack":
+        skreettung = Sprite(skreet.x, skreet.y, "skreettung",simple_img=world.image_db["skreettung"])
+        #sprites.append(skreettung)
     
+    
+        tox = skreet.target.x
+        toy = skreet.target.y
+        if distance(skreet,skreet.target) >=500:
+            skreet.mode = "chase"  
+        if skreet.target.x > skreet.x:
+            skreet.target.x -= 1
+            skreet.target.facing ="left"
+        if skreet.target.x < skreet.x:
+            skreet.target.x += 1
+            skreet.target.facing ="right"
+        if skreet.target.y > skreet.y:
+            skreet.target.y -= 1
+            #skreet.facing ="down"
+        if skreet.target.y < skreet.y:
+            skreet.target.y += 1
+        if not is_valid_spot(skreet.target, m, ts):
+            skreet.target.x = tox
+            skreet.target.y = toy
+            
+    if skreet.mode == "cheel":
+        if distance(skreet,skreet.target) <=500:
+            skreet.mode = "chase"
+            
+            
+        if distance(skreet,skreet.target) >=200:
+            skreet.mode = "chase"  
+            
+
+
+def tick_gloub(gloub, m, ts, sprites):
+    if gloub.mode == "chase":
+        if gloub.target.x > gloub.x:
+            gloub.vx = 0.3
+            gloub.facing ="right"
+        if gloub.target.x < gloub.x:
+            gloub.vx = -0.3
+            gloub.facing ="left"
+        if gloub.target.y > gloub.y:
+            gloub.vy = 0.3
+            gloub.facing ="down"
+        if gloub.target.y < gloub.y:
+            gloub.vy = -0.3
+            gloub.facing ="up"
+        attempt_walk(gloub, m, ts)
+        
+       
+        if distance(gloub,gloub.target) >= 1000:
+            gloub.mode = "cheel"
+            
+    if gloub.mode == "cheel":
+        if distance(gloub,gloub.target) <=500:
+            gloub.mode = "chase"            
+
+def is_valid_spot(s, m, ts):
+
+    hx = s.x + s.hitbox.x 
+    hy = s.y + s.hitbox.y
+
+    left = int(hx / world.TILE_WIDTH)
+    right = int((hx + s.hitbox.width) / world.TILE_WIDTH)
+    top = int(hy / world.TILE_WIDTH )
+    bottom = int((hy + s.hitbox.height) / world.TILE_WIDTH )
+    coords = [(left, top), (left, bottom), (right, top), (right, bottom)]
+
+    collision = False
+    for tx, ty in coords:
+        if not walkable(tx, ty, m, ts):
+            collision = True
+    return not collision
         
 def attempt_v_move(s, vx, vy,  m, ts):
     s.last_x = s.x
