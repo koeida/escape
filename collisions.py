@@ -59,6 +59,11 @@ def deflect(s1, s2, sprites):
     s2.vy *= -20
     s2.vx *= -20
     s2.deflected_timer = 100
+
+def get_key(s1, s2, sprites):
+    s1.inventory.append(s2)
+    sprites.remove(s2)
+
     
 def shrinkyrect(r, percent):
     shrunkwidth = (r.width/100) * percent
@@ -109,3 +114,4 @@ collision_db = {("player", "monk"): keep_separated,
                 ("skreet", "puke"): puke_borg_hit,
                 ("skreet", "bloodyloodies"): puke_borg_hit,
                 ("player", "wall"): keep_separated}
+                ("player", "key"): get_key}

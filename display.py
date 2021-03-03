@@ -9,7 +9,7 @@ import math
 
 import particles as part
 
-Tileset = namedtuple("Tileset", "image tile_width tile_height tiles_per_line rows data")
+
 
 class Camera:
     def __init__(self, target, x, y, width, height):
@@ -22,26 +22,10 @@ class Camera:
     def set_shake(self, x):
         self.shake = x
 
-class TileInfo:
-    pass
     
-def tile(walkable=True):
-    results = TileInfo()
-    results.walkable = walkable
-    return results
 
-def load_tileset(tileset_img, tile_width, tile_height):
-    img_width = tileset_img.get_rect().width   
-    img_height = tileset_img.get_rect().height    
-    tiles_per_line = int(img_width / tile_width)
-    rows = int(img_height / tile_height)   
     
-    data = {1: tile(False),
-            3: tile(False),
-            6: tile(False),
-            12: tile(False)} 
-   
-    return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows, data)
+    
     
 def hitbar(max,cur,screen):
     screen.fill((20,20,20),(35,35,max,30))
@@ -88,11 +72,22 @@ def get_tile_coords(tileset, tile_number):
 
 def render_sprite(screen, c_left, c_top, s):
     if s.simple_img != None:
-        screen.blit(s.simple_img, (s.x - c_left, s.y - c_top))
+        if s.angle != None:
+            nimg = pygame.transform.rotate(s.original_img, s.angle)
+            r = s.simple_img.get_rect()
+            r.x = s.x
+            r.y = s.y
+            nr = nimg.get_rect()
+            nr.center = r.center
+            nr.x -= c_left
+            nr.y -= c_top
+            screen.blit(nimg, nr)
+        else:
+            screen.blit(s.simple_img, (s.x - c_left, s.y - c_top))
     else:
         aname, width, height, aframes, adelay = s.animations[s.current_animation][s.facing]
         img = world.image_db[aname]
-        ts = load_tileset(img, width, height)
+        ts = world.load_tileset(img, width, height)
         try:
             current_tile_number = aframes[s.current_frame]
         except:

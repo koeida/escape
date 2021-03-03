@@ -27,11 +27,12 @@ def two_chunk(l):
 l = [1, 2, 3, 4, 5, 6]
 print(two_chunk(l))
         
-def get_coords(m, needle):
+
+def get_coords(m, needles):
     results = [] # end up with something like: [(0,10), (10, 20), (25, 10)]
     for y in range(len(m)):
         for x in range(len(m[0])):
-            if m[y][x] == needle:
+            if m[y][x] in needles:
                 results.append((x,y))
     return results 
 
@@ -43,3 +44,15 @@ def clamp(v, minv, maxv):
     else:
         return v
 
+def filter_dict(f, l):
+    result = []
+    for k,v in l.items():
+        if f(v):
+            result.append(k)
+    return result
+    
+def map_dict(f, l):
+    results = []
+    for k, v in l.items():
+        results.append(f(k,v))
+    return results
