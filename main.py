@@ -17,7 +17,7 @@ from pygame.locals import *
     
 def get_input(player, m, ts):
     keys = pygame.key.get_pressed()
-    speed = 8
+    speed = 4
     dx = 0
     dy = 0
     
@@ -25,7 +25,8 @@ def get_input(player, m, ts):
     s = keys[pygame.K_s]
     d = keys[pygame.K_d]
     a = keys[pygame.K_a]
-
+    o = keys[pygame.K_o]
+    
     oldfacing = player.facing
     
     if w:
@@ -40,11 +41,20 @@ def get_input(player, m, ts):
     if a:
         player.vx = -speed
         player.facing = "left"
+    if o:
+        x = int((player.x + 32) / 32)
+        y = int((player.y + 32)/ 32)
+        adjacenttiles = ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1), (y + 1, x + 1), (y - 1, x - 1), (y + 1, x - 1), (y - 1, x + 1))
+        doors = list(filter(lambda t: m[t[0]][t[1]] == 12, adjacenttiles))
+        if doors != []:
+            dy, dx = doors[0]
+            m[dy][dx] = 13
+            
     if not s and not w:
         player.vy = 0
     if not a and not d:
         player.vx = 0    
-
+    
     if player.vx == 0 and player.vy == 0:
         creatures.switch_anim(player,"standing")
     else:
@@ -80,7 +90,7 @@ def main(screen):
     stacked_dude = display.stack_spritesheets(["BODY_male", "LEGS_robe_skirt"])
     world.image_db["dude"] = stacked_dude
     
-    game_map = dungeongen.make_dungeon(1000)
+    game_map = dungeongen.make_dungeon(140)
     
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
@@ -101,18 +111,35 @@ def main(screen):
                           "right": ("boganim", 105, 80, [3,4,5], 7),
                           #"up": ("boganim", 105, 80, [5], 7),
                           "down": ("boganim", 105, 80, [5], 7)
-                         }
-            }
+                         }}
+                         
+    vlanim = { "walking": {"left": ("VLATION", 64, 59, [0,1], 7), 
+                          "right": ("VLATION", 64, 59, [0,1], 7),
+                          "up": ("VLATION", 64, 59, [0,1], 7),
+                          "down": ("VLATION", 64, 59, [0,1], 7)
+            }}
+            
+    glanim = { "walking": {"left": ("Gloub", 61, 45, [0,1,2,3,4,5], 7), 
+                          "right": ("Gloub", 61, 45, [0,1,2,3,4,5], 7),
+                          "up": ("Gloub", 61, 45, [0,1,2,3,4,5], 7),
+                          "down": ("Gloub", 61, 45, [0,1,2,3,4,5], 7)
+            }}
+            
+    skanim = { "walking": {"left": ("Skreets", 73, 91, [0,1,2,3], 5), 
+                          "right": ("Skreets", 73, 91, [0,1,2,3], 5),
+                          "up":("Skreets", 73, 91, [0,1,2,3], 5),
+                          "down": ("Skreets", 73, 91, [0,1,2,3], 5)
+            }}
     
-    game_map = dungeongen.make_dungeon(500)
-    spawnpoints = get_coords(game_map,0)
+    
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
+    loogie_anim = { "walking": {"down": ("bloodyloodies", 20, 20, [0], 7)}}
 
     player = creatures.Sprite(400, 400, "player", panim)
     player.tick = creatures.tick_player
     #player.x = 1000
     #player.y = 1000
-    creatures.randomspawn(player,game_map,spawnpoints)
+    creatures.randomspawn(player,game_map)
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     player.hitpoints = 100
     enemy = creatures.Sprite(600, 600, "monk", panim)
@@ -133,18 +160,59 @@ def main(screen):
 
     sprites = [player, shield]
     
-    for x in range(2000):
+    spawnpoints = get_coords(game_map,0)
+    for x in range(100):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)
         borgalon.vx = 1
         borgalon.vy = 0
-        borgalon.facing = "right"
-        borgalon.mode = "chase"
+        borgalon.hitpoints = 5
+        borgalon.facing = "left"
+        borgalon.mode = "cheel"
         borgalon.target = player
         borgalon.tick = creatures.tick_borgalon
-        borgalon.hitpoints = 3
         sprites.append(borgalon)
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
+    
+    for x in range(50):
+        vlation = creatures.Sprite(500,500, "vlation", vlanim)
+        creatures.randomspawn(vlation,game_map, spawnpoints)
+        vlation.vx = 1
+        vlation.vy = 0
+        vlation.hitpoints = 10
+        vlation.facing = "left"
+        vlation.mode = "cheel"
+        vlation.target = player
+        vlation.tick = creatures.tick_vlation
+        sprites.append(vlation)
+    loogies = creatures.Sprite(350, 350, "bloodyloodies", loogie_anim)
+    
+    for x in range(50):
+        skreet = creatures.Sprite(500,500, "skreet", skanim)
+        creatures.randomspawn(skreet,game_map, spawnpoints)
+        skreet.vx = 1
+        skreet.vy = 0
+        skreet.hitpoints = 10
+        skreet.facing = "left"
+        skreet.mode = "cheel"
+        skreet.target = player
+        skreet.tick = creatures.tick_skreet
+        sprites.append(skreet)
+        tung = creatures.Sprite(32, 32, "skreettung", simple_img=world.image_db["skreettung"])
+    
+    
+    for x in range(50):
+        gloub = creatures.Sprite(500,500, "gloub", glanim)
+        creatures.randomspawn(gloub,game_map, spawnpoints)
+        gloub.vx = 1
+        gloub.vy = 0
+        gloub.hitpoints = 18
+        gloub.facing = "left"
+        gloub.mode = "cheel"
+        gloub.target = player
+        gloub.tick = creatures.tick_gloub
+        sprites.append(gloub)
+    
 
     
     shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
@@ -174,7 +242,7 @@ def main(screen):
             if s.kind != "wall":
                 if s.tick != None:
                     s.tick(s, game_map, ts, sprites)
-                #creaures.attempt_walk(s, game_map, ts)
+                    #creaures.attempt_walk(s, game_map, ts)
         for p in part.particles:
             part.tick_particle(p)
             if p.lifespan <= 0:
@@ -185,12 +253,22 @@ def main(screen):
         #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
         shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
         
-        nearbysprites = list(filter(lambda s: distance(s,player) < 500, sprites))
-        collisions.check_collisions(nearbysprites)
-        for s in sprites:
-          if s.hitpoints <=0:
-            s.alive = False
+        if player.hitpoints <= 0:
+            player.alive = False
+            shield.alive = False
+        
+        oldhp = player.hitpoints
+        
+        nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
+        collisions.check_collisions(nearby_sprites, sprites)
+        if oldhp != player.hitpoints:
+            cam.set_shake(2)
+            timers.add_timer(1,lambda:cam.set_shake(0))
+        
         sprites = list(filter(lambda s: s.alive, sprites))
+        for s in sprites:
+            if s.hitpoints <=0:
+                s.alive = False
             
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:

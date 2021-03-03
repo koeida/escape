@@ -3,11 +3,12 @@ from pptree import Node, print_tree
 from random import randint
 
 class Area: 
-    def __init__(self, x, y, w, h, split_mode=None):
+    def __init__(self, x, y, w, h, split_mode=None, zone_num=0):
         self.x = x
         self.y = y
         self.w = w
         self.h = h
+        self.zone_num = zone_num
         self.color = (randint(0,255), randint(0,255), randint(0,255))
         self.split_mode = split_mode
     def __str__(self): return "%d,%d %dx%d" % (self.x, self.y, self.w, self.h)
@@ -33,8 +34,8 @@ def split_horiz(p, min_size):
 
 def split_area(a, cur_depth, max_depth=11, min_size=20):
     p = a.name # p == parent
-    if randint(0,5) == 0 and cur_depth > 3:
-        return None
+    #if randint(0,5) == 0 and cur_depth > 3:
+        #return None
     
     if cur_depth > max_depth or p.w < min_size or p.h < min_size:
         return None
@@ -76,7 +77,7 @@ def get_branches(head, depth):
 def make_bsp_rooms(width, height):    
     head = Node(Area(0,0,width, height,"vert"))
     split_area(head, 0)
-    zones = get_branches(head, 7)
+    zones = get_branches(head, 4)
     zones = list(map(get_leaves, zones))
     for x in range(len(zones)):
         zones[x] = list(map(lambda r: r.name, zones[x]))

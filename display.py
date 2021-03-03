@@ -47,11 +47,6 @@ def hitbar(max,cur,screen):
     screen.fill((20,20,20),(35,35,max,30))
     screen.fill((0,150,30),(35,35,cur,30))
     
-def draw_text(size, message, color,x,y, screen):
-    font = pygame.font.SysFont(None, size)
-    img = font.render(message, True, color)
-    screen.blit(img, (x, y))
-    
     
 
 def draw_tile(screen, tileset, tile_number, x, y):
@@ -186,8 +181,6 @@ def draw_interface(screen, cam, ts, game_map, sprites):
     player = first(lambda s: s.kind == "player", sprites) 
     if player != None:
         hitbar(100, player.hitpoints,screen)
-    
-    draw_text(24,"POINTS:" + str(world.points),(255,255,255),600,100,screen)
     # TASK: Maybe draw a pretty border around the camera, I dunno
     # TASK: Draw player stats
     # TASK: Draw inventory? 

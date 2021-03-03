@@ -1,7 +1,5 @@
 import pygame
 
-points = 0
-
 TILE_WIDTH = 32
 TILE_HEIGHT = 32
 FPS = 60
@@ -9,7 +7,13 @@ FPS = 60
 image_db = ["BODY_male.png",
             "LEGS_robe_skirt.png",
             "boganim.png",
-            "puke.png"]
+            "puke.png",
+            "BLOOD.png",
+            "VLATION.png",
+            "bloodyloodies.png",
+            "Gloub.png",
+            "Skreets.png",
+            "skreettung.png"]
     
 def load_assets():
     global image_db
