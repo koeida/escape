@@ -150,7 +150,6 @@ def main(screen):
     player.tick = creatures.tick_player
     #player.x = 1000
     #player.y = 1000
-    creatures.randomspawn(player,game_map)
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     player.hitpoints = 100
     enemy = creatures.Sprite(600, 600, "monk", panim)
@@ -185,6 +184,7 @@ def main(screen):
     dungeongen.add_shadow(game_map, sprites)
     
     spawnpoints = get_coords(game_map, filter_dict(lambda x: x.floor_tile, world.TILES.data))
+    creatures.randomspawn(player,game_map, spawnpoints)
     for x in range(50):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)

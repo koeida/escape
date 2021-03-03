@@ -19,9 +19,12 @@ class Graphnode:
         self.neighbors = set()
         
 class Zone:
-    def __init__ (self, name, rooms):
+    def __init__ (self, name, rooms, floor_tile=0, wall_tile=1, top_tile=6):
         self.name = name
         self.rooms = rooms
+        self.floor_tile = floor_tile
+        self.wall_tile = wall_tile
+        self.top_tile = top_tile
         
 def make_room(w,h, floor_tile=0, wall_tile=1, top_tile=6):
     """Returns a list of lists of tile numbers"""
@@ -501,13 +504,13 @@ def visualize_gen(screen):
     make_dungeon(140, screen)
 
 
-pygame.init()
-screen = pygame.display.set_mode((1280, 1024))
-try:
-    visualize_gen(screen)
-except Exception as e:
-    print(e)
-    pygame.display.quit()
+#pygame.init()
+#screen = pygame.display.set_mode((1280, 1024))
+#try:
+#    visualize_gen(screen)
+#except Exception as e:
+#    print(e)
+#    pygame.display.quit()
 
 def drawy():
     test_map = [[0 for x in range(70)] for y in range(70)]
