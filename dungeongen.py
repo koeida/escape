@@ -19,12 +19,14 @@ class Graphnode:
         self.neighbors = set()
         
 class Zone:
-    def __init__ (self, name, rooms, floor_tile=0, wall_tile=1, top_tile=6):
+    def __init__ (self, name, rooms):
         self.name = name
         self.rooms = rooms
-        self.floor_tile = floor_tile
-        self.wall_tile = wall_tile
-        self.top_tile = top_tile
+        self.floor_tile = choice(filter_dict(lambda v: v.floor_tile, world.TILES.data))
+        mapped = map_dict(lambda k,v: (k, v.matching_tile), world.TILES.data)
+        filtered = list(filter(lambda t: t[1] != None, mapped))
+        print("jadkLwj;jwoIDJWODJ;jwdoWJ;O" + str(filtered))
+        self.wall_tile, self.top_tile = choice(filtered)
         
 def make_room(w,h, floor_tile=0, wall_tile=1, top_tile=6):
     """Returns a list of lists of tile numbers"""
