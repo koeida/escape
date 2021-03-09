@@ -37,6 +37,11 @@ class Sprite:
         self.inventory = []
         self.original_img = simple_img
         self.angle = None
+        self.conversation = None
+        self.can_act = True
+        
+    def set_can_act(self):
+        self.can_act = True
         
     def get_rect(self):
         if self.simple_img != None:

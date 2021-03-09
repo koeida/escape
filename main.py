@@ -14,6 +14,7 @@ import world
 import dungeongen
 import particles as part
 from pygame.locals import *
+import dialobjects
     
 def get_input(player, m, ts, cs):
     keys = pygame.key.get_pressed()
@@ -26,7 +27,7 @@ def get_input(player, m, ts, cs):
     d = keys[pygame.K_d]
     a = keys[pygame.K_a]
     o = keys[pygame.K_o]
-    m = keys[pygame.K_m]  
+    q = keys[pygame.K_q]  
     oldfacing = player.facing
     
     ks = list(filter(lambda i: i.kind == "key", player.inventory))
@@ -58,10 +59,15 @@ def get_input(player, m, ts, cs):
             ks[0].hitpoints -= 1
             if ks[0].hitpoints == 0:
                 player.inventory.remove(ks[0])
-    if m:
-        if distance(player, first(lambda s: s.kind == "stranger", cs)) < 50:
-            world.mode = "dialogue"
-            world.dialogue_message = "I'm cold. Do you have a coat? if you do, then can you please give me it? then I would be less cold and forever in your debt"
+    if q and player.can_act:
+        player.can_act = False
+        timers.add_timer(0.1, lambda: player.set_can_act())
+        for c in cs:
+            if distance(player, c) < 50 and c.conversation != None:
+                world.mode = "dialogue"
+                world.dialogue_message = ""
+                world.diakey = c.conversation
+                world.partner = c
     if not s and not w:
         player.vy = 0
     if not a and not d:
@@ -92,21 +98,62 @@ def gen_test_map():
     
     return game_map
 def dialogue_mode():
+    # if there is no current dialogue message, grab it from the dialogue database with diakey
+    cur_dialogue = dialobjects.conversation[world.diakey][world.diaindex]
+    # if the type of cur_dialogue is a message
+    if type(cur_dialogue) == dialobjects.C_Text:
+        if world.dialogue_message == "":
+            world.dialogue_message = cur_dialogue.message
+    if type(cur_dialogue) == dialobjects.C_Switch:
+        world.partner.conversation = cur_dialogue.new_conv
+        world.mode = "game"
+        world.diakey = ""
+        world.diaindex = 0
+        world.dialogue_message = ""
+        world.choice = ""
+    if type(cur_dialogue) == dialobjects.C_Give:
+        world.diaindex += 1
+        # world.mode = "game"
+        # world.diakey = c.target
+        # world.diaindex = 0
+        # world.dialogue_message = ""
+        # world.choice = ""
+    # if the type is a switch, then change the current conversation partner's conv to the switch
+    # if the type is a give, then return to game mode for now
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            world.mode = "game"
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+        if world.choice != "":
+            if event.type == pygame.KEYDOWN:
+                for c in cur_dialogue.choices:
+                    if event.key == c.key:
+                        world.diakey = c.target
+                        world.diaindex = 0
+                        world.dialogue_message = ""
+                        world.choice = ""# loop over possible valid button presses
+                # if they've pressed the button, quit out of dialogue
+        else:
+            if event.type == pygame.QUIT:
                 world.mode = "game"
-            if event.key == pygame.K_n:
-                lpb = 56
-                boxes = display.text_lines(lpb, world.dialogue_message)
-                print(boxes)
-                start = len(boxes[0])
-                if len(boxes) > 1:
-                    world.dialogue_message = world.dialogue_message[start:]  
-                else:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
                     world.mode = "game"
+                if event.key == pygame.K_q:
+                    lpb = 56
+                    boxes = display.text_lines(lpb, world.dialogue_message)
+                    start = len(boxes[0])
+                    if len(boxes) > 1:
+                        world.dialogue_message = world.dialogue_message[start:]  
+                    else:
+                        # if there is a choice associated with this conversation thread
+                        if cur_dialogue.choices != None:
+                            world.choice = "    ".join(list(map(lambda v:v.text ,cur_dialogue.choices)))
+                        elif len(dialobjects.conversation[world.diakey]) > world.diaindex + 1:
+                            world.diaindex += 1
+                            world.choice = ""
+                            world.dialogue_message = ""
+                            # reset all those global variables other than diaindex and diakey
+                        else:# switch into choice mode(?) and display choices
+                            world.mode = "game"
+                        
 def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):   
     
     timers.update_timers()
@@ -154,6 +201,7 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
 def main(screen):   
     clock = pygame.time.Clock()
     running = True
+    key_timer = 0
     
     world.load_assets()
 
@@ -187,14 +235,15 @@ def main(screen):
     
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
     room = dungeongen.shrink_room(choice(start.rooms))
-    py = randint(room.y + 1, room.y + room.h - 1)
-    px = randint(room.x + 1, room.x + room.w - 1)
+    py = randint(room.y + 1, room.y + room.h - 3)
+    px = randint(room.x + 1, room.x + room.w - 3)
     player = creatures.Sprite(px * 32, py * 32, "player", panim)
     player.tick = creatures.tick_player
     #player.x = 1000
     #player.y = 1000
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     player.hitpoints = 100
+    
     enemy = creatures.Sprite(600, 600, "monk", panim)
     assert(start.rooms != end.rooms)
     room2 = dungeongen.shrink_room(choice(end.rooms))
@@ -239,6 +288,7 @@ def main(screen):
         sprites.append(borgalon)
     
     stranger = creatures.Sprite(player.x + 100, player.y, "stranger", simple_img=world.image_db["stranger"])
+    stranger.conversation = "stranger"
     sprites.append(stranger)
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
 
@@ -256,9 +306,10 @@ def main(screen):
     timers.add_timer(5, lambda: cam.set_shake(5))
     timers.add_timer(10, lambda: cam.set_shake(0))
     
+    
     while(running):
         clock.tick(60)
-        
+        key_timer += 1
         if world.mode == "game":
             sprites, running = game_mode(timers, player, game_map, ts, sprites, shield, swidth, running)
         elif world.mode == "dialogue":

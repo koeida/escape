@@ -175,6 +175,8 @@ def draw_interface(screen, cam, ts, game_map, sprites):
         hitbar(100, player.hitpoints,screen)
     if world.mode == "dialogue":
         dialoguebox(screen, 100, 100, 200, 100, world.dialogue_message)
+        if world.choice != "":
+            dialoguebox(screen, 100, 225, 200, 32, world.choice)
     # TASK: Maybe draw a pretty border around the camera, I dunno
     # TASK: Draw player stats
     # TASK: Draw inventory? 
@@ -222,7 +224,7 @@ def text_lines(lpl, message):
 def dialoguebox(screen, x, y, w, h, message):
     pygame.font.init()
     
-    myfont = pygame.font.SysFont('Lucida Console', 18)
+    myfont = pygame.font.SysFont('Lucida Console', 18) 
     lpb = 56
     boxes = text_lines(lpb, message)
     message = boxes[0]

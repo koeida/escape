@@ -6,6 +6,10 @@ TILE_HEIGHT = 32
 FPS = 60
 mode = "game"
 dialogue_message = ""
+diakey = ""
+diaindex = 0
+choice = ""  
+partner = None
 image_db = ["BODY_male.png",
             "LEGS_robe_skirt.png",
             "boganim.png",
