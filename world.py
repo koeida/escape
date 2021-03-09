@@ -5,7 +5,12 @@ from collections import namedtuple
 TILE_WIDTH = 32
 TILE_HEIGHT = 32
 FPS = 60
-
+mode = "game"
+dialogue_message = ""
+diakey = ""
+diaindex = 0
+choice = ""  
+partner = None
 image_db = ["BODY_male.png",
             "LEGS_robe_skirt.png",
             "boganim.png",
@@ -21,8 +26,17 @@ image_db = ["BODY_male.png",
             "cornershadow.png",
             "topshadow.png",
             "sideshadow.png",
-            "portal.png"]
-
+            "portal.png",
+            "dbtl.png",
+            "dbt.png",
+            "dbtr.png",
+            "dbl.png",
+            "dbr.png",
+            "dbbl.png",
+            "dbb.png",
+            "dbbr.png",
+            "stranger.png"]
+            
 def tile(walkable=True, floor_tile=False, matching_tile=None):
     results = TileInfo()
     results.walkable = walkable

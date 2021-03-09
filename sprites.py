@@ -29,7 +29,7 @@ class Sprite:
         self.next_anim = None
         self.tick = null_tick
         self.alive = True
-        self.hitpoints = 100
+        self.hitpoints = 5
         self.hitbox = self.get_rect()
         self.hitbox.x = 0
         self.hitbox.y = 0
@@ -37,6 +37,11 @@ class Sprite:
         self.inventory = []
         self.original_img = simple_img
         self.angle = None
+        self.conversation = None
+        self.can_act = True
+        
+    def set_can_act(self):
+        self.can_act = True
         
     def get_rect(self):
         if self.simple_img != None:

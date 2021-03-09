@@ -49,8 +49,11 @@ def beglobbed(s1,s2,sprites):
 def puke_borg_hit(s1,s2, ss):
     if s2.deflected_timer != 0:
         s2.alive = False
-        s1.hitpoints -=1
-        part.crazy_splatter(s2.x,s2.y,(127,127,0),randint(20,100))
+        s1.hitpoints -= 1
+        if s1.hitpoints == 0:
+            s1.alive = False
+        part.crazy_splatter(s2.x,s2.y,(0,125,0),randint(20,100))
+
 
     
 def deflect(s1, s2, sprites):

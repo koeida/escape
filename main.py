@@ -1,7 +1,7 @@
 from gamemap import gen_test_map
 from input import get_input
 from random import randint, uniform, choice
-from tools import get_coords, distance, filter_dict
+from tools import get_coords, distance, filter_dict, first
 import collisions
 import creatures
 import display
@@ -14,6 +14,7 @@ import world
 import dungeongen
 import particles as part
 from pygame.locals import *
+import dialobjects
     
 def get_input(player, m, ts, cs):
     keys = pygame.key.get_pressed()
@@ -26,7 +27,7 @@ def get_input(player, m, ts, cs):
     d = keys[pygame.K_d]
     a = keys[pygame.K_a]
     o = keys[pygame.K_o]
-    
+    q = keys[pygame.K_q]  
     oldfacing = player.facing
     
     ks = list(filter(lambda i: i.kind == "key", player.inventory))
@@ -59,7 +60,16 @@ def get_input(player, m, ts, cs):
             ks[0].hitpoints -= 1
             if ks[0].hitpoints == 0:
                 player.inventory.remove(ks[0])
-       
+    if q and player.can_act:
+        player.can_act = False
+        timers.add_timer(0.1, lambda: player.set_can_act())
+        for c in cs:
+            if distance(player, c) < 50 and c.conversation != None:
+                world.mode = "dialogue"
+                world.dialogue_message = ""
+                world.diakey = c.conversation
+                world.partner = c
+
     if not s and not w:
         player.vy = 0
     if not a and not d:
@@ -89,11 +99,111 @@ def gen_test_map():
         
     
     return game_map
-   
+def dialogue_mode():
+    # if there is no current dialogue message, grab it from the dialogue database with diakey
+    cur_dialogue = dialobjects.conversation[world.diakey][world.diaindex]
+    # if the type of cur_dialogue is a message
+    if type(cur_dialogue) == dialobjects.C_Text:
+        if world.dialogue_message == "":
+            world.dialogue_message = cur_dialogue.message
+    if type(cur_dialogue) == dialobjects.C_Switch:
+        world.partner.conversation = cur_dialogue.new_conv
+        world.mode = "game"
+        world.diakey = ""
+        world.diaindex = 0
+        world.dialogue_message = ""
+        world.choice = ""
+    if type(cur_dialogue) == dialobjects.C_Give:
+        world.diaindex += 1
+        # world.mode = "game"
+        # world.diakey = c.target
+        # world.diaindex = 0
+        # world.dialogue_message = ""
+        # world.choice = ""
+    # if the type is a switch, then change the current conversation partner's conv to the switch
+    # if the type is a give, then return to game mode for now
+    for event in pygame.event.get():
+        if world.choice != "":
+            if event.type == pygame.KEYDOWN:
+                for c in cur_dialogue.choices:
+                    if event.key == c.key:
+                        world.diakey = c.target
+                        world.diaindex = 0
+                        world.dialogue_message = ""
+                        world.choice = ""# loop over possible valid button presses
+                # if they've pressed the button, quit out of dialogue
+        else:
+            if event.type == pygame.QUIT:
+                world.mode = "game"
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    world.mode = "game"
+                if event.key == pygame.K_q:
+                    lpb = 56
+                    boxes = display.text_lines(lpb, world.dialogue_message)
+                    start = len(boxes[0])
+                    if len(boxes) > 1:
+                        world.dialogue_message = world.dialogue_message[start:]  
+                    else:
+                        # if there is a choice associated with this conversation thread
+                        if cur_dialogue.choices != None:
+                            world.choice = "    ".join(list(map(lambda v:v.text ,cur_dialogue.choices)))
+                        elif len(dialobjects.conversation[world.diakey]) > world.diaindex + 1:
+                            world.diaindex += 1
+                            world.choice = ""
+                            world.dialogue_message = ""
+                            # reset all those global variables other than diaindex and diakey
+                        else:# switch into choice mode(?) and display choices
+                            world.mode = "game"
+                        
+def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):   
+    
+    timers.update_timers()
+    
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    
+      
+    get_input(player, game_map, ts, sprites)       
+    
+    for s in sprites:
+        creatures.tick_anim(s)
+        if s.kind != "wall":
+            if s.tick != None:
+                s.tick(s, game_map, ts, sprites)
+                #creaures.attempt_walk(s, game_map, ts)
+    for p in part.particles:
+        part.tick_particle(p)
+        if p.lifespan <= 0:
+            part.particles.remove(p)
+        
+    shield.x = player.x - 17
+    shield.y = player.y - 10
+    #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
+    shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
+    
+    if player.hitpoints <= 0:
+        player.alive = False
+        shield.alive = False
+    
+    nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
+    collisions.check_collisions(nearby_sprites, sprites)
 
+    sprites = list(filter(lambda s: s.alive, sprites))
+        
+    for event in pygame.event.get():
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            part.crazy_splatter(player.x + 50, player.y + 50, (255,0,0))
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                running = False
+        
+    return(sprites, running)
 def main(screen):   
     clock = pygame.time.Clock()
     running = True
+    key_timer = 0
     
     world.load_assets()
 
@@ -144,19 +254,24 @@ def main(screen):
     
     
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
-    loogie_anim = { "walking": {"down": ("bloodyloodies", 20, 20, [0], 7)}}
 
-    player = creatures.Sprite(400, 400, "player", panim)
+    room = dungeongen.shrink_room(choice(start.rooms))
+    py = randint(room.y + 1, room.y + room.h - 3)
+    px = randint(room.x + 1, room.x + room.w - 3)
+    player = creatures.Sprite(px * 32, py * 32, "player", panim)
+
+    loogie_anim = { "walking": {"down": ("bloodyloodies", 20, 20, [0], 7)}}
     player.tick = creatures.tick_player
     #player.x = 1000
     #player.y = 1000
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     player.hitpoints = 100
+    
     enemy = creatures.Sprite(600, 600, "monk", panim)
     assert(start.rooms != end.rooms)
     room2 = dungeongen.shrink_room(choice(end.rooms))
-    portaly = randint(room2.y + 1, room2.y + room2.h - 1)
-    portalx = randint(room2.x + 1, room2.x + room2.w - 1)
+    portaly = randint(room2.y + 1, room2.y + room2.h - 2)
+    portalx = randint(room2.x + 1, room2.x + room2.w - 2)
     portal = creatures.Sprite(portalx * 32, portaly * 32, "portal", simple_img=world.image_db["portal"])
     portal.tick = creatures.portal_tick
     portal.original_img = portal.simple_img
@@ -197,6 +312,10 @@ def main(screen):
         borgalon.target = player
         borgalon.tick = creatures.tick_borgalon
         sprites.append(borgalon)
+    
+    stranger = creatures.Sprite(player.x + 100, player.y, "stranger", simple_img=world.image_db["stranger"])
+    stranger.conversation = "stranger"
+    sprites.append(stranger)
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
     
     for x in range(50):
@@ -253,56 +372,16 @@ def main(screen):
     timers.add_timer(5, lambda: cam.set_shake(5))
     timers.add_timer(10, lambda: cam.set_shake(0))
     
+    
     while(running):
         clock.tick(60)
-        timers.update_timers()
-        
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-        
-          
-        get_input(player, game_map, ts, sprites)       
-        
-        for s in sprites:
-            creatures.tick_anim(s)
-            if s.kind != "wall":
-                if s.tick != None:
-                    s.tick(s, game_map, ts, sprites)
-                    #creaures.attempt_walk(s, game_map, ts)
-        for p in part.particles:
-            part.tick_particle(p)
-            if p.lifespan <= 0:
-                part.particles.remove(p)
-            
-        shield.x = player.x - 17
-        shield.y = player.y - 10
-        #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
-        shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
-        
-        if player.hitpoints <= 0:
-            player.alive = False
-            shield.alive = False
-        
-        oldhp = player.hitpoints
-        
-        nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
-        collisions.check_collisions(nearby_sprites, sprites)
-        if oldhp != player.hitpoints:
-            cam.set_shake(2)
-            timers.add_timer(1,lambda:cam.set_shake(0))
-
-        sprites = list(filter(lambda s: s.alive, sprites))
-        for s in sprites:
-            if s.hitpoints <=0:
-                s.alive = False
-            
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                part.crazy_splatter(player.x + 50, player.y + 50, (255,0,0))
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    running = False
+        key_timer += 1
+        if world.mode == "game":
+            sprites, running = game_mode(timers, player, game_map, ts, sprites, shield, swidth, running)
+        elif world.mode == "dialogue":
+            dialogue_mode()
+        else:
+            assert(False)
                 
         screen.fill((0,0,0))        
         display.draw_interface(screen, cam, ts, game_map, sprites)
