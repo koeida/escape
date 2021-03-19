@@ -45,10 +45,13 @@ def attempt_move(s, m, ts):
     attempt_v_move2(s, s.vx, 0, m, ts)
     attempt_v_move2(s, 0, s.vy, m, ts)
 
+def tick_null(p, m, ts, sprites):
+    pass
+
 def tick_blood(p, m, ts, sprites):
     pass    
 
-def tick_coin(coin, m, ts, sprites):
+def tick_drop(coin, m, ts, sprites):
     attempt_move(coin, m, ts)
     coin.vx = pull(coin.vx, 0.1)
     coin.vy = pull(coin.vy, 0.1)
@@ -74,14 +77,14 @@ def make_blood_splatter(x, y):
     blood.alive = True
     return blood    
     
-def make_coin(x, y):
-    coin = Sprite(x, y, "coin", simple_img=world.image_db["coin"])
-    coin.target = None
-    coin.vy = randint(-3, 3)
-    coin.vx = randint(-3, 3)
-    coin.tick = tick_coin
-    coin.alive = True
-    return coin
+def make_item(x, y, image_name, kind, tick=tick_null):
+    item = Sprite(x, y, kind, simple_img=world.image_db[image_name])
+    item.target = None
+    item.vy = randint(-3, 3)
+    item.vx = randint(-3, 3)
+    item.tick = tick
+    item.alive = True
+    return item
 
 def keep_separated(s1, s2, sprites):
     s1.x = s1.last_x
@@ -91,7 +94,7 @@ def keep_separated(s1, s2, sprites):
     
 def puke_hit(s1,s2, ss):
     blood = make_blood_splatter(s1.x + 15, s1.y + 25)
-    s1.hitpoints -= 1
+    s1.hitpoints -= 3
     s2.alive = False
     part.crazy_splatter(s2.x,s2.y,(180,0,0),randint(20,100))
     playerhurt.play()
@@ -100,10 +103,16 @@ def puke_hit(s1,s2, ss):
 def puke_borg_hit(s1,s2, ss):
     if s2.deflected_timer != 0:
         s2.alive = False
-        s1.alive = False
-        coin = make_coin(s1.x+50, s1.y+32)
+        s1.hitpoints -= 1
+        if s1.hitpoints == 0:
+            s1.alive = False
+            if randint(1,5) < 5:
+                coin = make_item(s1.x+50, s1.y+32, "coin", "coin", tick_drop)
+                ss.append(coin)
+            if randint(1,4) == 2:
+                fang = make_item(s1.x+50, s1.y+32, "borgalon_fang", "borg_fang", tick_drop)
+                ss.append(fang)
         borghurt.play()
-        ss.append(coin)
         part.crazy_splatter(s2.x,s2.y,(0,125,0),randint(20,100))
 
     
@@ -119,7 +128,11 @@ def get_key(s1, s2, sprites):
     s1.inventory.append(s2)
     keypickup.play()
     sprites.remove(s2)
-        
+    
+def get_item(s1, s2, sprites):
+    s1.inventory.append(s2)
+    sprites.remove(s2)
+    
 def get_coin(s1, s2, sprites):
     s1.money += 1
     coindrop.play()
@@ -161,6 +174,7 @@ collision_db = {("player", "monk"): keep_separated,
                 ("player", "puke"): puke_hit,
                 ("borgalon", "puke"): puke_borg_hit,
                 ("shield", "puke"): deflect,
+                ("player", "borg_fang"): get_item,
                 ("shield", "borgalon"): deflect,
                 ("player", "wall"): keep_separated,
                 ("player", "key"): get_key,

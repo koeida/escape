@@ -172,9 +172,10 @@ def main(screen):
     dungeongen.add_shadow(game_map, sprites)
     
     spawnpoints = get_coords(game_map, filter_dict(lambda x: x.floor_tile, world.TILES.data))
-    for x in range(50):
+    for x in range(200):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)
+        borgalon.hitpoints = 5
         borgalon.vx = 1
         borgalon.vy = 0
         borgalon.facing = "right"
@@ -193,11 +194,7 @@ def main(screen):
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
-    
-    # Timer Example
-    timers.add_timer(5, lambda: cam.set_shake(5))
-    timers.add_timer(10, lambda: cam.set_shake(0))
-    
+        
     while(running):
         clock.tick(60)
         timers.update_timers()
@@ -241,8 +238,9 @@ def main(screen):
                 if event.key == pygame.K_SPACE:
                     running = False
                 
-        screen.fill((0,0,0))        
-        display.draw_interface(screen, cam, ts, game_map, sprites)
+        screen.fill((0,0,0))    
+        if player.alive:
+            display.draw_interface(screen, cam, ts, game_map, sprites)
         
         pygame.display.flip()
 
