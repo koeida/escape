@@ -521,15 +521,6 @@ def visualize_gen(screen):
     running = True
     make_dungeon(140, screen)
 
-
-#pygame.init()
-#screen = pygame.display.set_mode((1280, 1024))
-#try:
-#    visualize_gen(screen)
-#except Exception as e:
-#    print(e)
-#    pygame.display.quit()
-
 def drawy():
     test_map = [[0 for x in range(70)] for y in range(70)]
 

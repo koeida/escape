@@ -14,6 +14,7 @@ class Sprite:
     def __init__(self, x, y, kind, animations=None, current_animation="walking", simple_img=None):
         self.x = x
         self.y = y
+        self.money = 0
         self.kind = kind
         self.animations = animations
         self.current_animation = current_animation
