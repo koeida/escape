@@ -4,6 +4,7 @@ from collections import namedtuple
 
 TILE_WIDTH = 32
 TILE_HEIGHT = 32
+total_ticks = 0 
 FPS = 60
 mode = "game"
 dialogue_message = ""
@@ -11,6 +12,7 @@ diakey = ""
 diaindex = 0
 choice = ""  
 partner = None
+globs = {"tortoise_spawn": False}
 image_db = ["BODY_male.png",
             "LEGS_robe_skirt.png",
             "boganim.png",
@@ -35,7 +37,9 @@ image_db = ["BODY_male.png",
             "dbbl.png",
             "dbb.png",
             "dbbr.png",
-            "stranger.png"]
+            "stranger.png",
+            "tortoise2.png",
+            "tortoise_collector.png"]
             
 def tile(walkable=True, floor_tile=False, matching_tile=None):
     results = TileInfo()

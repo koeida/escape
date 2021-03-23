@@ -33,10 +33,17 @@ def get_input(player, m, ts, cs):
     ks = list(filter(lambda i: i.kind == "key", player.inventory))
     
     if keys[pygame.K_t]:
-        key = list(filter(lambda x: x.kind == "portal", cs))[0]
-        player.x = key.x + 5
-        player.y = key.y + 5
-    if w:
+        matched = False
+        for y in range(len(m)):
+            if matched == True:
+                break
+            for x in range(len(m[0])):
+                if m[y][x] == 16:
+                    player.x = x*32
+                    player.y = y*32
+                    matched = True
+                    break
+    if w:   
         player.vy = -speed
         player.facing = "up"
     if s:
@@ -69,7 +76,12 @@ def get_input(player, m, ts, cs):
                 world.dialogue_message = ""
                 world.diakey = c.conversation
                 world.partner = c
-
+        print("yo")
+        r = player.get_rect()
+        y = int((player.y + r.height/2)/32)
+        x = int((player.x + r.width/2)/32)
+        if m[y][x] == 20:
+            m[y][x] = 11  
     if not s and not w:
         player.vy = 0
     if not a and not d:
@@ -82,7 +94,15 @@ def get_input(player, m, ts, cs):
 
     if player.facing != oldfacing:
         player.current_frame = 0
-    
+
+def tortoise_spawn(z, sprites):
+    for t in range(5):
+        room = choice(z.rooms)
+        turtle = creatures.Sprite(randint(room.x + 4, room.x + room.w - 5)*32, randint(room.y + 4, room.y + room.h - 5)*32, "tortoise", simple_img=world.image_db["tortoise2"])
+        turtle.item = True
+        turtle.tick = creatures.tick_item
+        sprites.append(turtle)
+        
 def gen_test_map():
     game_map = [[0 for x in range(100)] for y in range(100)]
     for x in range(1000):
@@ -122,6 +142,12 @@ def dialogue_mode():
         # world.choice = ""
     # if the type is a switch, then change the current conversation partner's conv to the switch
     # if the type is a give, then return to game mode for now
+    if type(cur_dialogue) == dialobjects.C_Global:
+        world.globs[cur_dialogue.key] = cur_dialogue.value
+        world.diaindex += 1
+        world.dialogue_message = ""
+        world.choice = ""
+        print(world.globs["tortoise_spawn"])
     for event in pygame.event.get():
         if world.choice != "":
             if event.type == pygame.KEYDOWN:
@@ -159,7 +185,7 @@ def dialogue_mode():
 def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):   
     
     timers.update_timers()
-    
+    world.total_ticks += 1
     mouse_x, mouse_y = pygame.mouse.get_pos()
     
       
@@ -211,7 +237,7 @@ def main(screen):
     world.image_db["dude"] = stacked_dude
     
 
-    game_map, keys, start, end = dungeongen.make_dungeon(140)
+    game_map, keys, start, end, zones = dungeongen.make_dungeon(140)
     
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
@@ -296,10 +322,9 @@ def main(screen):
     
     sprites.append(portal)
      
-    dungeongen.add_shadow(game_map, sprites)
+    #dungeongen.add_shadow(game_map, sprites)
     
     spawnpoints = get_coords(game_map, filter_dict(lambda x: x.floor_tile, world.TILES.data))
-    creatures.randomspawn(player,game_map, spawnpoints)
     for x in range(50):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)
@@ -313,9 +338,20 @@ def main(screen):
         borgalon.tick = creatures.tick_borgalon
         sprites.append(borgalon)
     
-    stranger = creatures.Sprite(player.x + 100, player.y, "stranger", simple_img=world.image_db["stranger"])
+    room = dungeongen.shrink_room(choice(start.rooms))
+    ty = randint(room.y + 1, room.y + room.h - 3)
+    tx = randint(room.x + 1, room.x + room.w - 3)
+    tortoise_merch = creatures.Sprite(tx*32, ty*32, "tortoise_collector", simple_img=world.image_db["tortoise_collector"])
+    tortoise_merch.conversation = "tortoise"
+    sprites.append(tortoise_merch)
+    
+    room = dungeongen.shrink_room(choice(start.rooms))
+    ty = randint(room.y + 1, room.y + room.h - 3)
+    tx = randint(room.x + 1, room.x + room.w - 3)
+    stranger = creatures.Sprite(tx*32, ty*32, "stranger", simple_img=world.image_db["stranger"])
     stranger.conversation = "stranger"
     sprites.append(stranger)
+    
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
     
     for x in range(50):
@@ -376,13 +412,16 @@ def main(screen):
     while(running):
         clock.tick(60)
         key_timer += 1
+        if world.globs["tortoise_spawn"] == True:
+            tortoise_spawn(creatures.cur_zone(player, zones), sprites)
+            world.globs["tortoise_spawn"] = False
         if world.mode == "game":
             sprites, running = game_mode(timers, player, game_map, ts, sprites, shield, swidth, running)
         elif world.mode == "dialogue":
             dialogue_mode()
         else:
             assert(False)
-                
+        
         screen.fill((0,0,0))        
         display.draw_interface(screen, cam, ts, game_map, sprites)
         
