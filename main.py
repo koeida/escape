@@ -14,8 +14,13 @@ import world
 import dungeongen
 import particles as part
 from pygame.locals import *
+
+pygame.mixer.init()
+dooropen = pygame.mixer.Sound("door-open.wav")
+dooropen.set_volume(0.3)
+
 import dialobjects
-    
+
 def get_input(player, m, ts, cs):
     keys = pygame.key.get_pressed()
     speed = 4
@@ -65,6 +70,7 @@ def get_input(player, m, ts, cs):
             dy, dx = doors[0]
             m[dy][dx] = 13
             ks[0].hitpoints -= 1
+            dooropen.play()
             if ks[0].hitpoints == 0:
                 player.inventory.remove(ks[0])
     if q and player.can_act:
@@ -325,9 +331,10 @@ def main(screen):
     #dungeongen.add_shadow(game_map, sprites)
     
     spawnpoints = get_coords(game_map, filter_dict(lambda x: x.floor_tile, world.TILES.data))
-    for x in range(50):
+    for x in range(200):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)
+        borgalon.hitpoints = 5
         borgalon.vx = 1
         borgalon.vy = 0
 
@@ -404,11 +411,6 @@ def main(screen):
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
     
-    # Timer Example
-    timers.add_timer(5, lambda: cam.set_shake(5))
-    timers.add_timer(10, lambda: cam.set_shake(0))
-    
-    
     while(running):
         clock.tick(60)
         key_timer += 1
@@ -422,8 +424,24 @@ def main(screen):
         else:
             assert(False)
         
-        screen.fill((0,0,0))        
-        display.draw_interface(screen, cam, ts, game_map, sprites)
+        nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
+        collisions.check_collisions(nearby_sprites, sprites)
+
+        sprites = list(filter(lambda s: s.alive, sprites))
+            
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                part.crazy_splatter(player.x + 50, player.y + 50, (255,0,0))
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    running = False
+                
+        screen.fill((0,0,0))    
+        if player.alive:
+            display.draw_interface(screen, cam, ts, game_map, sprites)
+
         
         pygame.display.flip()
 
