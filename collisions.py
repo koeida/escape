@@ -96,6 +96,10 @@ def check_collisions(nearby, sprites):
             overlap = shield_mask.overlap(s2mask, offset)
             if cpair in collision_db and overlap != None:
                 collision_db[cpair](s1, s2, sprites)
+        elif s2.item and s1.kind == "player" and hb1.colliderect(hb2):
+            s1.inventory.append(s2)
+            sprites.remove(s2)
+            
         else:
             if cpair in collision_db and hb1.colliderect(hb2):
                 collision_db[cpair](s1, s2, sprites)
