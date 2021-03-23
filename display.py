@@ -9,8 +9,6 @@ import math
 
 import particles as part
 
-
-
 class Camera:
     def __init__(self, target, x, y, width, height):
         self.target = target
@@ -21,8 +19,7 @@ class Camera:
         self.y = y
     def set_shake(self, x):
         self.shake = x
-
-    
+      
 
     
     
@@ -192,6 +189,10 @@ def draw_interface(screen, cam, ts, game_map, sprites):
     player = first(lambda s: s.kind == "player", sprites) 
     if player != None:
         hitbar(100, player.hitpoints,screen)
+    if world.mode == "dialogue":
+        dialoguebox(screen, 100, 100, 200, 100, world.dialogue_message)
+        if world.choice != "":
+            dialoguebox(screen, 100, 225, 200, 32, world.choice)
     # TASK: Maybe draw a pretty border around the camera, I dunno
     # TASK: Draw player stats
     screen.blit(world.image_db["coin"], (0, 510))
@@ -222,4 +223,52 @@ def render_shield(mouse_x, mouse_y, swidth):
                        int(angle - sangle), int(angle + sangle),
                        (255, 255, 255))  
     return shield_surface
+  
+
+def text_lines(lpl, message):
+    lines = []
+    message += " " 
+    while message != "":
+        line = message[:lpl]
+        other = ""
+        while line[-1] != " ":
+            other += line[-1]
+            line = line[:-1]
+        message = other[::-1] + message[lpl:]
+        lines.append(line)
+    return lines
+
+
+  
+def dialoguebox(screen, x, y, w, h, message):
+    pygame.font.init()
     
+    myfont = pygame.font.SysFont('Lucida Console', 18) 
+    lpb = 56
+    boxes = text_lines(lpb, message)
+    message = boxes[0]
+    message += " "
+    rx, ry, rw, rh = rect = (x - 10, y - 10, w + 20, h + 20)
+    screen.fill((0, 0, 0), (rx + 32, ry + 32, rw - 64, rh - 64))
+    for n in range(int(rect[2]/32)):
+        rex = (n * 32) + x
+        screen.blit(world.image_db["dbt"], (rex, rect[1]))
+        screen.blit(world.image_db["dbb"], (rex, rect[1] + rect[3] - 32))
+    
+    for n in range(int(rect[3]/32)):
+        rey = (n * 32) + y
+        screen.blit(world.image_db["dbl"], (rect[0], rey))
+        screen.blit(world.image_db["dbr"], (rect[0] + rect[2] - 32, rey))
+    screen.blit(world.image_db["dbtl"], (rect[0], rect[1]))
+    screen.blit(world.image_db["dbtr"], (rect[0] + rect[2] - 32, rect[1]))
+    screen.blit(world.image_db["dbbl"], (rect[0], rect[1] + rect[3] - 32))
+    screen.blit(world.image_db["dbbr"], (rect[0] + rect[2] - 32, rect[1] + rect[3] - 32))
+    letter_width = 20
+    lpl = int(w/letter_width * 2)
+    lines = text_lines(lpl, message)
+    cury = y
+    for l in lines:
+        textsurface = myfont.render(l, False, (255, 255, 255))
+        screen.blit(textsurface, (x, cury))
+        cury += 25
+        

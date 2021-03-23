@@ -2,12 +2,12 @@ from random import choice, randint
 import bsp
 import itertools
 from tools import first, two_chunk, filter_dict, map_dict
-from copy import deepcopy
 import pygame
 import time
 from copy import deepcopy
 from sprites import Sprite
 import world
+
 
 dungeon_viz = []
 colors = [(randint(0,255), randint(0,255), randint(0,255)) for x in range(50)]
@@ -19,9 +19,13 @@ class Graphnode:
         self.neighbors = set()
         
 class Zone:
-    def __init__ (self, name, rooms):
+    def __init__ (self, name, rooms, x, y, w, h):
         self.name = name
         self.rooms = rooms
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
         self.floor_tile = choice(filter_dict(lambda v: v.floor_tile, world.TILES.data))
         mapped = map_dict(lambda k,v: (k, v.matching_tile), world.TILES.data)
         filtered = list(filter(lambda t: t[1] != None, mapped))
@@ -240,8 +244,7 @@ def make_graph(zone_pairs):
         assert(id(z1n.neighbors) != id(z2n.neighbors))
         z1n.neighbors.add(z2n)
         z2n.neighbors.add(z1n)
-        
-        
+       
         #print(z1n.neighbors)
         
         #print("joining %s and %s" % (z1n.name, z2n.name))
@@ -264,6 +267,7 @@ def connect_zones(zones, node):
     end = zones[walk[-1]]
     start = zones[walk[0]]
     chunks = two_chunk(walk)
+
     results = []
     for c in chunks:
        pairs = adjacent_zone_rooms(zones[c[0]], zones[c[1]])
@@ -300,10 +304,13 @@ def shrink_room(room):
 def make_dungeon(size, viz_screen=None):
     blank_tile = 3
     dungeon = [[blank_tile for x in range(size)] for y in range(size)]
-    zs = bsp.make_bsp_rooms(size,size)
+    zs, zone_sizes = bsp.make_bsp_rooms(size,size)
+    tsize = 32
     zones = []
     for z in range(len(zs)):
-        zone = Zone(z, zs[z])
+        zdata = zone_sizes[z].name
+        zx, zy, zw, zh = list(map(lambda x: x * tsize, [zdata.x, zdata.y, zdata.w, zdata.h]))
+        zone = Zone(z, zs[z], zx, zy, zw, zh)
         zones.append(zone)
     azones = adjacent_zones(zones)
 
@@ -336,8 +343,16 @@ def make_dungeon(size, viz_screen=None):
     for z in zones:
         make_zone_hallways(z.rooms, dungeon)
         place_key(z, keys)
+    
+    trap_door_spawn(dungeon)
+    return dungeon, keys, start, end, zones
+
+def trap_door_spawn(m):
+    for y in range(len(m)):
+        for x in range(len(m[0])):
+            if m[y][x] == 16 and randint(1, 300) == 1:
+                m[y][x] = 20
         
-    return dungeon, keys, start, end
     
 def add_shadow(d, sprites):
     for y in range(len(d)):
@@ -360,7 +375,8 @@ def line_hallways(size, dungeon):
         for x in range(size):
             try:
                 adjacenttiles = [dungeon[y + 1][x], dungeon[y - 1][x], dungeon[y][x + 1], dungeon[y][x - 1], dungeon[y + 1][x + 1], dungeon[y - 1][x - 1], dungeon[y + 1][x - 1], dungeon[y - 1][x + 1]]
-                if dungeon[y][x] == 3 and 10 in adjacenttiles: 
+
+                if dungeon[y][x] == 3 and 10 in adjacenttiles:
                    dungeon[y][x] = 1
             except:
                 pass
@@ -384,6 +400,7 @@ def place_key(z, keys):
         key = Sprite(x, y, "key", key_anim)
         key.alive = True
         key.hitpoints = 2
+        key.item = True
         keys.append(key)
     
 def make_zone_hallways(rooms, dungeon):

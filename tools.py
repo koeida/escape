@@ -24,9 +24,6 @@ def two_chunk(l):
         else:
             return cs
 
-l = [1, 2, 3, 4, 5, 6]
-print(two_chunk(l))
-        
 def get_coords(m, needles):
     results = [] # end up with something like: [(0,10), (10, 20), (25, 10)]
     for y in range(len(m)):
@@ -55,3 +52,22 @@ def map_dict(f, l):
     for k, v in l.items():
         results.append(f(k,v))
     return results
+
+def map2d_impure(f, m):
+    for y in range(len(m)):
+        for x in range(len(m[y])):
+            f(m,x,y)
+
+def filter2d(f,m):
+    results = []
+    for y in range(len(m)):
+        for x in range(len(m[y])):
+            if f(m[y][x]):
+                results.append((x,y))
+    return results
+
+def first2d(f,m):
+    for y in range(len(m)):
+        for x in range(len(m[y])):
+            if f(m[y][x]):
+                return x,y
