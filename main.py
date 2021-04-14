@@ -216,6 +216,7 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
     if player.hitpoints <= 0:
         player.alive = False
         shield.alive = False
+
     
     nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
     collisions.check_collisions(nearby_sprites, sprites)
@@ -232,7 +233,16 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
                 running = False
         
     return(sprites, running)
+
+def add1(x):
+    return x + 1
+
+def get_distance(s):
+    global player
+    return distance(s, player) < 250
+
 def main(screen):   
+    global player
     clock = pygame.time.Clock()
     running = True
     key_timer = 0
@@ -291,6 +301,7 @@ def main(screen):
     py = randint(room.y + 1, room.y + room.h - 3)
     px = randint(room.x + 1, room.x + room.w - 3)
     player = creatures.Sprite(px * 32, py * 32, "player", panim)
+    player.light = True
 
     loogie_anim = { "walking": {"down": ("bloodyloodies", 20, 20, [0], 7)}}
     player.tick = creatures.tick_player
@@ -328,12 +339,13 @@ def main(screen):
     #dungeongen.add_shadow(game_map, sprites)
     
     spawnpoints = get_coords(game_map, filter_dict(lambda x: x.floor_tile, world.TILES.data))
-    for x in range(200):
+    for x in range(100):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)
         borgalon.hitpoints = 5
         borgalon.vx = 1
         borgalon.vy = 0
+        borgalon.light = True
 
         borgalon.hitpoints = 5
         borgalon.facing = "left"

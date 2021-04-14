@@ -94,7 +94,7 @@ def render_sprite(screen, c_left, c_top, s):
         hitbox_rect = pygame.Rect(s.x + s.hitbox.x - c_left, s.y + s.hitbox.y - c_top, s.hitbox.width, s.hitbox.height)
         #pygame.gfxdraw.rectangle(screen, hitbox_rect, (255,0,0))
                 
-def render_cam_sprites(screen, cam, sprites, ts, m):
+def render_cam_sprites(screen, cam, sprites, ts, m, light_screen):
     c_left, c_top = get_camera_game_coords(cam, m, ts)
     for s in sprites:
         srect = s.get_rect()
@@ -104,6 +104,8 @@ def render_cam_sprites(screen, cam, sprites, ts, m):
         on_y = s.y >= c_top - sh and s.y < c_top + cam.height
         if on_x and on_y:
             render_sprite(screen, c_left, c_top, s)
+            if s.light:
+                light_screen.blit(world.image_db["light"], (s.x - c_left - 150, s.y - c_top - 150), special_flags=pygame.BLEND_RGBA_SUB)
                 
     return screen
     
@@ -160,9 +162,9 @@ def render_camera_tiles(camera, ts, m):
     
     return clip_tiles(result, c_left, c_top, ts, camera)
 
-def render_camera(camera, ts, m, sprites):
+def render_camera(camera, ts, m, sprites, light_screen):
     result = render_camera_tiles(camera, ts, m)
-    result = render_cam_sprites(result, camera, sprites, ts, m)
+    result = render_cam_sprites(result, camera, sprites, ts, m, light_screen)
     result = render_cam_particles(result, camera, ts, m,sprites)
     return result
     
@@ -184,8 +186,11 @@ def draw_inventory(screen, inventory):
 
 def draw_interface(screen, cam, ts, game_map, sprites):
     # Draw the camera
-    cam_surface = render_camera(cam,  ts, game_map, sprites)
+    dark_surface = pygame.Surface((cam.width, cam.height), pygame.SRCALPHA)
+    dark_surface.fill((0,0,0))
+    cam_surface = render_camera(cam,  ts, game_map, sprites, dark_surface)
     screen.blit(cam_surface, (cam.x, cam.y))
+    screen.blit(dark_surface, (cam.x, cam.y))
     player = first(lambda s: s.kind == "player", sprites) 
     if player != None:
         hitbar(100, player.hitpoints,screen)

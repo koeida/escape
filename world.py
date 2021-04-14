@@ -42,6 +42,7 @@ image_db = ["BODY_male.png",
             "dbbr.png",
             "stranger.png",
             "tortoise2.png",
+            "light.png",
             "tortoise_collector.png"]
             
 def tile(walkable=True, floor_tile=False, matching_tile=None):

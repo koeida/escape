@@ -41,6 +41,7 @@ class Sprite:
         self.conversation = None
         self.can_act = True
         self.item = False
+        self.light = False
         
     def set_can_act(self):
         self.can_act = True
