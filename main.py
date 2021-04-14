@@ -318,9 +318,6 @@ def main(screen):
     shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     
     shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
-    border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
-    
 
         
 
