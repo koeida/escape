@@ -35,7 +35,13 @@ image_db = ["BODY_male.png",
             "dbbl.png",
             "dbb.png",
             "dbbr.png",
-            "stranger.png"]
+            "stranger.png",
+            "boss1.png",
+            "Deathscreen.png",
+            "darkscreen.png",
+            "torches.png",
+            "chest2.png",
+            "chest.png"]
             
 def tile(walkable=True, floor_tile=False, matching_tile=None):
     results = TileInfo()
@@ -67,7 +73,16 @@ def load_tileset(tileset_img, tile_width, tile_height):
             15: tile(True, True),
             16: tile(True, True),
             18: tile(False, matching_tile=19),
-            19: tile(False)}
+            19: tile(False),
+            20: tile(False, matching_tile=21),
+            21: tile(False),
+            22: tile(True, True),
+            23: tile(False, matching_tile=24),
+            24: tile(False),
+            25: tile(True, True),
+            26: tile(True, True),
+            27: tile(False, matching_tile=28),
+            28: tile(False)}
             
     return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows, data)
     
