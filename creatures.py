@@ -330,3 +330,82 @@ def tick_shield():
     #player_sx, player_sy = #display.calc_screen_coords(coords, camrect)
     #shield.simple_img = display.render_shield(0, 0, mouse_x, mouse_y, swidth)
     pass
+def make_skreet(game_map, spawnpoints, player):
+    skanim = { "walking": {"left": ("Skreets", 73, 91, [0,1,2,3], 5), 
+                           "right": ("Skreets", 73, 91, [0,1,2,3], 5),
+                           "up":("Skreets", 73, 91, [0,1,2,3], 5),
+                           "down": ("Skreets", 73, 91, [0,1,2,3], 5)
+            }}
+            
+    skreet = Sprite(500,500, "skreet", skanim)
+    randomspawn(skreet,game_map, spawnpoints)
+    skreet.vx = 1
+    skreet.vy = 0
+    skreet.hitpoints = 10
+    skreet.facing = "left"
+    skreet.mode = "cheel"
+    skreet.target = player
+    skreet.tick = tick_skreet
+    return skreet
+
+def make_vlation(game_map, spawnpoints, player):
+    vlanim = { "walking": {"left": ("VLATION", 64, 59, [0,1], 7), 
+                           "right": ("VLATION", 64, 59, [0,1], 7),
+                           "up": ("VLATION", 64, 59, [0,1], 7),
+                           "down": ("VLATION", 64, 59, [0,1], 7)
+            }}
+            
+    vlation = Sprite(500,500, "vlation", vlanim)
+    randomspawn(vlation,game_map, spawnpoints)
+    vlation.vx = 1
+    vlation.vy = 0
+    vlation.hitpoints = 10
+    vlation.facing = "left"
+    vlation.mode = "cheel"
+    vlation.target = player
+    vlation.tick = tick_vlation
+    return vlation
+    
+def make_gloub(game_map, spawnpoints, player):
+    glanim = { "walking": {"left": ("Gloub", 61, 45, [0,1,2,3,4,5], 7), 
+                           "right": ("Gloub", 61, 45, [0,1,2,3,4,5], 7),
+                           "up": ("Gloub", 61, 45, [0,1,2,3,4,5], 7),
+                           "down": ("Gloub", 61, 45, [0,1,2,3,4,5], 7)
+            }}
+    gloub = Sprite(500,500, "gloub", glanim)
+    randomspawn(gloub,game_map, spawnpoints)
+    gloub.vx = 1
+    gloub.vy = 0
+    gloub.hitpoints = 18
+    gloub.facing = "left"
+    gloub.mode = "cheel"
+    gloub.target = player
+    gloub.tick = tick_gloub
+    return gloub
+    
+def make_borg(game_map, spawnpoints, player):
+    banim = { "walking": {"left": ("boganim", 105, 80, [0,1,2], 7),
+                          "right": ("boganim", 105, 80, [3,4,5], 7),
+                          #"up": ("boganim", 105, 80, [5], 7),
+                          "down": ("boganim", 105, 80, [5], 7)
+                         }}
+                         
+    borgalon = Sprite(500,500, "borgalon", banim)
+    randomspawn(borgalon,game_map, spawnpoints)
+    borgalon.hitpoints = 5
+    borgalon.vx = 1
+    borgalon.vy = 0
+    borgalon.facing = "left"
+    borgalon.mode = "cheel"
+    borgalon.target = player
+    borgalon.tick = tick_borgalon
+    return borgalon   
+    
+def make_shield(player): 
+    swidth = player.get_rect().width + 35
+    smiddle = int(swidth / 2)
+    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    
+    shield = Sprite(400, 400, "shield", simple_img=shield_surface) 
+    
+    return shield, swidth

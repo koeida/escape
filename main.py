@@ -21,8 +21,9 @@ dooropen.set_volume(0.3)
 
 import dialobjects
 
-def get_input(player, m, ts, cs):
+def get_input(player, m, ts, cs, shield):
     keys = pygame.key.get_pressed()
+    nm = m
     speed = 4
     dx = 0
     dy = 0
@@ -38,16 +39,12 @@ def get_input(player, m, ts, cs):
     ks = list(filter(lambda i: i.kind == "key", player.inventory))
     
     if keys[pygame.K_t]:
-        matched = False
         for y in range(len(m)):
-            if matched == True:
-                break
             for x in range(len(m[0])):
-                if m[y][x] == 16:
+                if m[y][x] == 20:
                     player.x = x*32
                     player.y = y*32
-                    matched = True
-                    break
+        
     if w:   
         player.vy = -speed
         player.facing = "up"
@@ -88,6 +85,12 @@ def get_input(player, m, ts, cs):
         x = int((player.x + r.width/2)/32)
         if m[y][x] == 20:
             m[y][x] = 11  
+            dooropen.play()
+            nm, cs, shield = dungeongen.trap_door_room(player)
+            cs.insert(0, player)
+            player.x = 40*32
+            player.y = 40*32
+            return nm, cs, shield
     if not s and not w:
         player.vy = 0
     if not a and not d:
@@ -100,7 +103,9 @@ def get_input(player, m, ts, cs):
 
     if player.facing != oldfacing:
         player.current_frame = 0
-
+        
+    return nm, cs, shield
+    
 def tortoise_spawn(z, sprites):
     for t in range(5):
         room = choice(z.rooms)
@@ -125,35 +130,53 @@ def gen_test_map():
         
     
     return game_map
-def dialogue_mode():
+def dialogue_mode(player):
+    if world.diaindex > len(dialobjects.conversation[world.diakey]) - 1:
+        world.mode = "game"
+        return
     # if there is no current dialogue message, grab it from the dialogue database with diakey
     cur_dialogue = dialobjects.conversation[world.diakey][world.diaindex]
+
     # if the type of cur_dialogue is a message
     if type(cur_dialogue) == dialobjects.C_Text:
         if world.dialogue_message == "":
             world.dialogue_message = cur_dialogue.message
-    if type(cur_dialogue) == dialobjects.C_Switch:
+    elif type(cur_dialogue) == dialobjects.C_Switch:
         world.partner.conversation = cur_dialogue.new_conv
         world.mode = "game"
         world.diakey = ""
         world.diaindex = 0
         world.dialogue_message = ""
         world.choice = ""
-    if type(cur_dialogue) == dialobjects.C_Give:
+    elif type(cur_dialogue) == dialobjects.C_Give:
         world.diaindex += 1
-        # world.mode = "game"
+        #world.mode = "game"
         # world.diakey = c.target
         # world.diaindex = 0
         # world.dialogue_message = ""
         # world.choice = ""
     # if the type is a switch, then change the current conversation partner's conv to the switch
     # if the type is a give, then return to game mode for now
-    if type(cur_dialogue) == dialobjects.C_Global:
+    elif type(cur_dialogue) == dialobjects.C_Check:
+        things = list(filter(lambda x:x.kind == cur_dialogue.kind, player.inventory))
+        if len(things) >= cur_dialogue.amount:
+            world.diakey = cur_dialogue.dy
+        else:
+            world.diakey = cur_dialogue.dn
+        world.diaindex = 0
+        world.dialogue_message = ""
+        world.choice = ""
+    elif type(cur_dialogue) == dialobjects.C_Global:
         world.globs[cur_dialogue.key] = cur_dialogue.value
         world.diaindex += 1
         world.dialogue_message = ""
         world.choice = ""
         print(world.globs["tortoise_spawn"])
+    elif type(cur_dialogue) == dialobjects.C_Get:
+        for x in range(cur_dialogue.amount):
+            player.inventory.append(collisions.make_item(0, 0, cur_dialogue.kind, cur_dialogue.kind, collisions.tick_drop))
+            print("yay")
+        world.diaindex += 1
     for event in pygame.event.get():
         if world.choice != "":
             if event.type == pygame.KEYDOWN:
@@ -195,7 +218,7 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
     mouse_x, mouse_y = pygame.mouse.get_pos()
     
       
-    get_input(player, game_map, ts, sprites)       
+    game_map, sprites, shield = get_input(player, game_map, ts, sprites, shield)       
     
     for s in sprites:
         creatures.tick_anim(s)
@@ -231,7 +254,7 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
             if event.key == pygame.K_SPACE:
                 running = False
         
-    return(sprites, running)
+    return sprites, running, game_map, shield
 def main(screen):   
     clock = pygame.time.Clock()
     running = True
@@ -257,36 +280,6 @@ def main(screen):
                         "left": ("dude", 64, 64, range(10, 18), 2),
                         "down": ("dude", 64, 64, range(19, 27), 2),
                         "right": ("dude", 64, 64, range(28, 36), 2)}}
-
-    
-                        
-    banim = { "walking": {"left": ("boganim", 105, 80, [0,1,2], 7),
-                          "right": ("boganim", 105, 80, [3,4,5], 7),
-                          #"up": ("boganim", 105, 80, [5], 7),
-                          "down": ("boganim", 105, 80, [5], 7)
-                         }}
-                         
-    vlanim = { "walking": {"left": ("VLATION", 64, 59, [0,1], 7), 
-                          "right": ("VLATION", 64, 59, [0,1], 7),
-                          "up": ("VLATION", 64, 59, [0,1], 7),
-                          "down": ("VLATION", 64, 59, [0,1], 7)
-            }}
-            
-    glanim = { "walking": {"left": ("Gloub", 61, 45, [0,1,2,3,4,5], 7), 
-                          "right": ("Gloub", 61, 45, [0,1,2,3,4,5], 7),
-                          "up": ("Gloub", 61, 45, [0,1,2,3,4,5], 7),
-                          "down": ("Gloub", 61, 45, [0,1,2,3,4,5], 7)
-            }}
-            
-    skanim = { "walking": {"left": ("Skreets", 73, 91, [0,1,2,3], 5), 
-                          "right": ("Skreets", 73, 91, [0,1,2,3], 5),
-                          "up":("Skreets", 73, 91, [0,1,2,3], 5),
-                          "down": ("Skreets", 73, 91, [0,1,2,3], 5)
-            }}
-    
-    
-    puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
-
     room = dungeongen.shrink_room(choice(start.rooms))
     py = randint(room.y + 1, room.y + room.h - 3)
     px = randint(room.x + 1, room.x + room.w - 3)
@@ -298,6 +291,8 @@ def main(screen):
     #player.y = 1000
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     player.hitpoints = 100
+    for x in range(6):
+        player.inventory.append(creatures.Sprite(randint(room.x + 4, room.x + room.w - 5)*32, randint(room.y + 4, room.y + room.h - 5)*32, "tortoise", simple_img=world.image_db["tortoise2"]))
     
     enemy = creatures.Sprite(600, 600, "monk", panim)
     assert(start.rooms != end.rooms)
@@ -312,15 +307,7 @@ def main(screen):
     
     
     
-    
-    swidth = player.get_rect().width + 35
-    smiddle = int(swidth / 2)
-    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    
-    shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
-    border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
-    
+    shield, swidth = creatures.make_shield(player)
 
         
 
@@ -331,20 +318,6 @@ def main(screen):
     #dungeongen.add_shadow(game_map, sprites)
     
     spawnpoints = get_coords(game_map, filter_dict(lambda x: x.floor_tile, world.TILES.data))
-    for x in range(200):
-        borgalon = creatures.Sprite(500,500, "borgalon", banim)
-        creatures.randomspawn(borgalon,game_map, spawnpoints)
-        borgalon.hitpoints = 5
-        borgalon.vx = 1
-        borgalon.vy = 0
-
-        borgalon.hitpoints = 5
-        borgalon.facing = "left"
-        borgalon.mode = "cheel"
-        borgalon.target = player
-        borgalon.tick = creatures.tick_borgalon
-        sprites.append(borgalon)
-    
     room = dungeongen.shrink_room(choice(start.rooms))
     ty = randint(room.y + 1, room.y + room.h - 3)
     tx = randint(room.x + 1, room.x + room.w - 3)
@@ -358,55 +331,25 @@ def main(screen):
     stranger = creatures.Sprite(tx*32, ty*32, "stranger", simple_img=world.image_db["stranger"])
     stranger.conversation = "stranger"
     sprites.append(stranger)
-    
+
+    tung = creatures.Sprite(32, 32, "skreettung", simple_img=world.image_db["skreettung"])   
+    puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
     
     for x in range(50):
-        vlation = creatures.Sprite(500,500, "vlation", vlanim)
-        creatures.randomspawn(vlation,game_map, spawnpoints)
-        vlation.vx = 1
-        vlation.vy = 0
-        vlation.hitpoints = 10
-        vlation.facing = "left"
-        vlation.mode = "cheel"
-        vlation.target = player
-        vlation.tick = creatures.tick_vlation
-        sprites.append(vlation)
-    loogies = creatures.Sprite(350, 350, "bloodyloodies", loogie_anim)
+        sprites.append(creatures.make_borg(game_map, spawnpoints, player))
     
-    for x in range(50):
-        skreet = creatures.Sprite(500,500, "skreet", skanim)
-        creatures.randomspawn(skreet,game_map, spawnpoints)
-        skreet.vx = 1
-        skreet.vy = 0
-        skreet.hitpoints = 10
-        skreet.facing = "left"
-        skreet.mode = "cheel"
-        skreet.target = player
-        skreet.tick = creatures.tick_skreet
-        sprites.append(skreet)
-        tung = creatures.Sprite(32, 32, "skreettung", simple_img=world.image_db["skreettung"])
+    for x in range(30):
+        sprites.append(creatures.make_vlation(game_map, spawnpoints, player))
     
+    for x in range(30):
+        sprites.append(creatures.make_skreet(game_map, spawnpoints, player))
     
-    for x in range(50):
-        gloub = creatures.Sprite(500,500, "gloub", glanim)
-        creatures.randomspawn(gloub,game_map, spawnpoints)
-        gloub.vx = 1
-        gloub.vy = 0
-        gloub.hitpoints = 18
-        gloub.facing = "left"
-        gloub.mode = "cheel"
-        gloub.target = player
-        gloub.tick = creatures.tick_gloub
-        sprites.append(gloub)
+    for x in range(30):
+        sprites.append(creatures.make_gloub(game_map, spawnpoints, player))
     
 
-    
-    shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
-    border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
-    
-    sprites.append(shield)
+    loogies = creatures.Sprite(350, 350, "bloodyloodies", loogie_anim) 
     
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
@@ -418,9 +361,9 @@ def main(screen):
             tortoise_spawn(creatures.cur_zone(player, zones), sprites)
             world.globs["tortoise_spawn"] = False
         if world.mode == "game":
-            sprites, running = game_mode(timers, player, game_map, ts, sprites, shield, swidth, running)
+            sprites, running, game_map, shield = game_mode(timers, player, game_map, ts, sprites, shield, swidth, running)
         elif world.mode == "dialogue":
-            dialogue_mode()
+            dialogue_mode(player)
         else:
             assert(False)
         

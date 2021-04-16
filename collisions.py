@@ -5,6 +5,7 @@ from random import randint
 from sprites import Sprite
 import gamemap
 import world
+import creatures
 
 pygame.mixer.init()
 coindrop = pygame.mixer.Sound("coin-drop-4.wav")
@@ -126,10 +127,12 @@ def puke_borg_hit(s1,s2, ss):
             s1.alive = False
             if randint(1,5) < 5:
                 coin = make_item(s1.x+50, s1.y+32, "coin", "coin", tick_drop)
+                coin.tick = creatures.tick_item
                 ss.append(coin)
             if randint(1,4) == 2:
                 fang = make_item(s1.x+50, s1.y+32, "borgalon_fang", "borg_fang", tick_drop)
-                ss.append(fang)
+                fang.tick = creatures.tick_item
+                ss.append(fang)                
         borghurt.play()
         part.crazy_splatter(s2.x,s2.y,(0,125,0),randint(20,100))
 
@@ -212,5 +215,5 @@ collision_db = {("player", "monk"): keep_separated,
                 ("skreet", "bloodyloodies"): puke_borg_hit,
                 ("player", "wall"): keep_separated,
                 ("player", "key"): get_key,
-                ("player", "coin"): get_coin}
+                ("player", "coin"): get_coin,
                 ("player", "key"): get_key}
