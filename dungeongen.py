@@ -19,9 +19,13 @@ class Graphnode:
         self.neighbors = set()
         
 class Zone:
-    def __init__ (self, name, rooms):
+    def __init__ (self, name, rooms, x, y, w, h):
         self.name = name
         self.rooms = rooms
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
         self.floor_tile = choice(filter_dict(lambda v: v.floor_tile, world.TILES.data))
         mapped = map_dict(lambda k,v: (k, v.matching_tile), world.TILES.data)
         filtered = list(filter(lambda t: t[1] != None, mapped))
@@ -300,10 +304,13 @@ def shrink_room(room):
 def make_dungeon(size, viz_screen=None):
     blank_tile = 3
     dungeon = [[blank_tile for x in range(size)] for y in range(size)]
-    zs = bsp.make_bsp_rooms(size,size)
+    zs, zone_sizes = bsp.make_bsp_rooms(size,size)
+    tsize = 32
     zones = []
     for z in range(len(zs)):
-        zone = Zone(z, zs[z])
+        zdata = zone_sizes[z].name
+        zx, zy, zw, zh = list(map(lambda x: x * tsize, [zdata.x, zdata.y, zdata.w, zdata.h]))
+        zone = Zone(z, zs[z], zx, zy, zw, zh)
         zones.append(zone)
     azones = adjacent_zones(zones)
 
@@ -336,8 +343,16 @@ def make_dungeon(size, viz_screen=None):
     for z in zones:
         make_zone_hallways(z.rooms, dungeon)
         place_key(z, keys)
+    
+    trap_door_spawn(dungeon)
+    return dungeon, keys, start, end, zones
+
+def trap_door_spawn(m):
+    for y in range(len(m)):
+        for x in range(len(m[0])):
+            if m[y][x] == 16 and randint(1, 300) == 1:
+                m[y][x] = 20
         
-    return dungeon, keys, start, end
     
 def add_shadow(d, sprites):
     for y in range(len(d)):
@@ -385,6 +400,7 @@ def place_key(z, keys):
         key = Sprite(x, y, "key", key_anim)
         key.alive = True
         key.hitpoints = 2
+        key.item = True
         keys.append(key)
     
 def make_zone_hallways(rooms, dungeon):
@@ -504,15 +520,6 @@ def visualize_gen(screen):
     clock = pygame.time.Clock()
     running = True
     make_dungeon(140, screen)
-
-
-#pygame.init()
-#screen = pygame.display.set_mode((1280, 1024))
-#try:
-#    visualize_gen(screen)
-#except Exception as e:
-#    print(e)
-#    pygame.display.quit()
 
 def drawy():
     test_map = [[0 for x in range(70)] for y in range(70)]

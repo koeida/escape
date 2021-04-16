@@ -2,8 +2,8 @@ from gamemap import get_map_coords, onscreen, walkable
 import world
 import display
 import pygame
-
-from tools import distance,get_coords, clamp, filter_dict
+from math import sin
+from tools import distance,get_coords, clamp, filter_dict, first
 from random import randint, uniform,choice
 
 import collisions
@@ -19,6 +19,13 @@ def switch_anim(s, anim_name):
         s.current_animation = anim_name
     else:
         s.next_anim = anim_name
+
+def z_check(p, z):
+    print("p.x: %d, p.y: %d in (%d, %d, %d, %d)?" % (p.x, p.y, z.x, z.y, z.w, z.h))
+    return p.x >= z.x and p.x <= z.x + z.w and p.y >= z.y and p.y <= z.y + z.h
+    
+def cur_zone(c, zs):
+    return first(lambda z: z_check(c, z), zs)
 
 def tick_anim(s):
     if s.anim_timer == None:
@@ -257,7 +264,9 @@ def tick_gloub(gloub, m, ts, sprites):
     if gloub.mode == "cheel":
         if distance(gloub,gloub.target) <=500:
             gloub.mode = "chase"            
-
+            
+def tick_item(item, m, ts, sprites):
+    item.y += sin(world.total_ticks / 3)
 def is_valid_spot(s, m, ts):
 
     hx = s.x + s.hitbox.x 

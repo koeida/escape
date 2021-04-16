@@ -3,21 +3,91 @@ from itertools import combinations
 import particles as part
 from random import randint
 from sprites import Sprite
+import gamemap
 import world
 
+pygame.mixer.init()
+coindrop = pygame.mixer.Sound("coin-drop-4.wav")
+keypickup = pygame.mixer.Sound("key_pickup.wav")
+playerhurt = pygame.mixer.Sound("player-hurt.wav")
+borghurt = pygame.mixer.Sound("borg-hurt.wav")
+keypickup.set_volume(0.25)
+playerhurt.set_volume(0.25)
+        
+def attempt_v_move2(s, vx, vy,  m, ts):
+    s.last_x = s.x
+    s.last_y = s.y
+
+    s.x += vx
+    s.y += vy
+
+    hx = s.x + s.hitbox.x 
+    hy = s.y + s.hitbox.y
+
+    left = int(hx / world.TILE_WIDTH)
+    right = int((hx + s.hitbox.width) / world.TILE_WIDTH)
+    top = int(hy / world.TILE_WIDTH )
+    bottom = int((hy + s.hitbox.height) / world.TILE_WIDTH )
+    coords = [(left, top), (left, bottom), (right, top), (right, bottom)]
+
+    collision = False
+    for tx, ty in coords:
+        if not gamemap.walkable(tx, ty, m, ts):
+            collision = True  
+
+    if collision:
+        s.x = s.last_x
+        s.y = s.last_y
+        return
+    
+
+def attempt_move(s, m, ts):
+    attempt_v_move2(s, s.vx, 0, m, ts)
+    attempt_v_move2(s, 0, s.vy, m, ts)
+
+def tick_null(p, m, ts, sprites):
+  pass
 
 def tick_blood(p, m, ts, sprites):
     pass
 
+def tick_blood(p, m, ts, sprites):
+    pass    
+
+def tick_drop(coin, m, ts, sprites):
+    attempt_move(coin, m, ts)
+    coin.vx = pull(coin.vx, 0.1)
+    coin.vy = pull(coin.vy, 0.1)
+    
+def pull(x, amt):
+    if x > 0:
+        x = x-amt
+        if x < 0:
+            x = 0
+    elif x < 0:
+        x = x+amt
+    else:
+        x = 0
+    return x
+    
+
 def make_blood_splatter(x, y):
-    blood_anim = { "walking": {"down": ("BLOOD", 32, 32, [0], 3)}}
     blood = Sprite(x, y, "BLOOD", simple_img=world.image_db["BLOOD"])
     blood.target = None
     blood.vy = 0
     blood.vx = 0
     blood.tick = tick_blood
     blood.alive = True
-    return blood
+    return blood    
+    
+def make_item(x, y, image_name, kind, tick=tick_null):
+    item = Sprite(x, y, kind, simple_img=world.image_db[image_name])
+    item.target = None
+    item.vy = randint(-3, 3)
+    item.vx = randint(-3, 3)
+    item.tick = tick
+    item.alive = True
+    return item
 
 def keep_separated(s1, s2, sprites):
     s1.x = s1.last_x
@@ -27,9 +97,15 @@ def keep_separated(s1, s2, sprites):
     
 def puke_hit(s1,s2, ss):
     blood = make_blood_splatter(s1.x + 15, s1.y + 25)
-    s1.hitpoints -= 1
+    s1.hitpoints -= 3
     s2.alive = False
+<<<<<<< HEAD
     part.crazy_splatter(s2.x,s2.y,(140,0,0),randint(20,100))
+=======
+
+    part.crazy_splatter(s2.x,s2.y,(180,0,0),randint(20,100))
+    playerhurt.play()
+>>>>>>> master
     ss.insert(0, blood)
     
 def wildbounce(s1,s2,sprites):
@@ -52,8 +128,19 @@ def puke_borg_hit(s1,s2, ss):
         s1.hitpoints -= 1
         if s1.hitpoints == 0:
             s1.alive = False
+<<<<<<< HEAD
         part.crazy_splatter(s2.x,s2.y,(127,127,0),randint(20,100))
 
+=======
+            if randint(1,5) < 5:
+                coin = make_item(s1.x+50, s1.y+32, "coin", "coin", tick_drop)
+                ss.append(coin)
+            if randint(1,4) == 2:
+                fang = make_item(s1.x+50, s1.y+32, "borgalon_fang", "borg_fang", tick_drop)
+                ss.append(fang)
+        borghurt.play()
+        part.crazy_splatter(s2.x,s2.y,(0,125,0),randint(20,100))
+>>>>>>> master
 
 
 def deflect(s1, s2, sprites):
@@ -70,6 +157,16 @@ def deflect(s1, s2, sprites):
 
 def get_key(s1, s2, sprites):
     s1.inventory.append(s2)
+    keypickup.play()
+    sprites.remove(s2)
+    
+def get_item(s1, s2, sprites):
+    s1.inventory.append(s2)
+    sprites.remove(s2)
+    
+def get_coin(s1, s2, sprites):
+    s1.money += 1
+    coindrop.play()
     sprites.remove(s2)
 
     
@@ -101,6 +198,10 @@ def check_collisions(nearby, sprites):
             overlap = shield_mask.overlap(s2mask, offset)
             if cpair in collision_db and overlap != None:
                 collision_db[cpair](s1, s2, sprites)
+        elif s2.item and s1.kind == "player" and hb1.colliderect(hb2):
+            s1.inventory.append(s2)
+            sprites.remove(s2)
+            
         else:
             if cpair in collision_db and hb1.colliderect(hb2):
                 collision_db[cpair](s1, s2, sprites)
@@ -114,6 +215,7 @@ collision_db = {("player", "monk"): keep_separated,
                 ("borgalon", "bloodyloodies"): puke_borg_hit,
                 ("shield", "bloodyloodies"): deflect,
                 ("shield", "puke"): deflect,
+                ("player", "borg_fang"): get_item,
                 ("gloub", "puke"): wildbounce,
                 ("gloub", "bloodyloodies"): wildbounce,
                 ("player", "gloub"): beglobbed,
@@ -122,4 +224,6 @@ collision_db = {("player", "monk"): keep_separated,
                 ("skreet", "puke"): puke_borg_hit,
                 ("skreet", "bloodyloodies"): puke_borg_hit,
                 ("player", "wall"): keep_separated,
+                ("player", "key"): get_key,
+                ("player", "coin"): get_coin,
                 ("player", "key"): get_key}

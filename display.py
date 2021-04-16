@@ -98,7 +98,7 @@ def render_sprite(screen, c_left, c_top, s):
         #hitbox_rect = pygame.Rect(s.x + s.hitbox.x - c_left, s.y + s.hitbox.y - c_top, s.hitbox.width, s.hitbox.height)
         #pygame.gfxdraw.rectangle(screen, hitbox_rect, (255,0,0))
                 
-def render_cam_sprites(screen, cam, sprites, ts, m):
+def render_cam_sprites(screen, cam, sprites, ts, m, light_screen):
     c_left, c_top = get_camera_game_coords(cam, m, ts)
     for s in sprites:
         srect = s.get_rect()
@@ -108,6 +108,8 @@ def render_cam_sprites(screen, cam, sprites, ts, m):
         on_y = s.y >= c_top - sh and s.y < c_top + cam.height
         if on_x and on_y:
             render_sprite(screen, c_left, c_top, s)
+            if s.light:
+                light_screen.blit(world.image_db["light"], (s.x - c_left - 150, s.y - c_top - 150), special_flags=pygame.BLEND_RGBA_SUB)
                 
     return screen
     
@@ -164,17 +166,36 @@ def render_camera_tiles(camera, ts, m):
     
     return clip_tiles(result, c_left, c_top, ts, camera)
 
-def render_camera(camera, ts, m, sprites):
+def render_camera(camera, ts, m, sprites, light_screen):
     result = render_camera_tiles(camera, ts, m)
-    result = render_cam_sprites(result, camera, sprites, ts, m)
+    result = render_cam_sprites(result, camera, sprites, ts, m, light_screen)
     result = render_cam_particles(result, camera, ts, m,sprites)
     return result
     
+def blit_text(screen, text, x, y, size, color=(255,255,255), font_type = None):
+    text = str(text)
+    if font_type == None:
+        font = pygame.font.SysFont("Terminal", size)
+    else:
+        font = pygame.font.Font(font_type, size)
+        
+    text = font.render(text, True, color)
+    screen.blit(text, (x,y))
+
+def draw_inventory(screen, inventory):
+    for y in range(2):
+        for x in range(8):
+            screen.blit(world.image_db["i_square"], (520+x*32, 32+y*32))
+
+
 def draw_interface(screen, cam, ts, game_map, sprites):
     # Draw the camera
-    cam_surface = render_camera(cam,  ts, game_map, sprites)
+    dark_surface = pygame.Surface((cam.width, cam.height), pygame.SRCALPHA)
+    dark_surface.fill((0,0,0))
+    cam_surface = render_camera(cam,  ts, game_map, sprites, dark_surface)
     screen.blit(cam_surface, (cam.x, cam.y))
-    screen.blit(world.image_db["darkscreen"],(cam.x,cam.y))
+    #screen.blit(world.image_db["darkscreen"],(cam.x,cam.y))
+    #screen.blit(dark_surface, (cam.x, cam.y))
     player = first(lambda s: s.kind == "player", sprites) 
     if player != None:
         hitbar(100, player.hitpoints,screen)
@@ -185,7 +206,10 @@ def draw_interface(screen, cam, ts, game_map, sprites):
             dialoguebox(screen, 100, 225, 200, 32, world.choice)
     # TASK: Maybe draw a pretty border around the camera, I dunno
     # TASK: Draw player stats
-    # TASK: Draw inventory? 
+    screen.blit(world.image_db["coin"], (0, 510))
+    blit_text(screen, player.money, 50, 512, 48)
+    # TASK: Draw inventory?
+    draw_inventory(screen, player.inventory)
     # TASK: Brainstorm other things that should go on the screen
     
 def calc_screen_coords(game_coords, camrect, cam, m, ts):

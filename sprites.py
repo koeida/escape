@@ -14,6 +14,7 @@ class Sprite:
     def __init__(self, x, y, kind, animations=None, current_animation="walking", simple_img=None):
         self.x = x
         self.y = y
+        self.money = 0
         self.kind = kind
         self.animations = animations
         self.current_animation = current_animation
@@ -39,6 +40,8 @@ class Sprite:
         self.angle = None
         self.conversation = None
         self.can_act = True
+        self.item = False
+        self.light = False
         
     def set_can_act(self):
         self.can_act = True
@@ -48,8 +51,6 @@ class Sprite:
             return self.simple_img.get_rect()
         else:
             aname, width, height, aframes, adelay = self.animations[self.current_animation][self.facing]
-            #img = world.image_db[aname]
-            #ts = world.load_tileset(img, width, height)
             result = pygame.Rect(self.x, self.y, width, height)
             return result 
     def get_img(self):

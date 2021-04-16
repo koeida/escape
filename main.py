@@ -14,8 +14,13 @@ import world
 import dungeongen
 import particles as part
 from pygame.locals import *
+
+pygame.mixer.init()
+dooropen = pygame.mixer.Sound("door-open.wav")
+dooropen.set_volume(0.3)
+
 import dialobjects
-    
+
 def get_input(player, m, ts, cs):
     keys = pygame.key.get_pressed()
     speed = 4
@@ -33,10 +38,17 @@ def get_input(player, m, ts, cs):
     ks = list(filter(lambda i: i.kind == "key", player.inventory))
     
     if keys[pygame.K_t]:
-        key = list(filter(lambda x: x.kind == "portal", cs))[0]
-        player.x = key.x + 5
-        player.y = key.y + 5
-    if w:
+        matched = False
+        for y in range(len(m)):
+            if matched == True:
+                break
+            for x in range(len(m[0])):
+                if m[y][x] == 16:
+                    player.x = x*32
+                    player.y = y*32
+                    matched = True
+                    break
+    if w:   
         player.vy = -speed
         player.facing = "up"
     if s:
@@ -58,6 +70,7 @@ def get_input(player, m, ts, cs):
             dy, dx = doors[0]
             m[dy][dx] = 13
             ks[0].hitpoints -= 1
+            dooropen.play()
             if ks[0].hitpoints == 0:
                 player.inventory.remove(ks[0])
     if q and player.can_act:
@@ -73,6 +86,11 @@ def get_input(player, m, ts, cs):
             elif distance(player, c) < 50 and c.kind == "chest":
                 cs.remove(c)
 
+        r = player.get_rect()
+        y = int((player.y + r.height/2)/32)
+        x = int((player.x + r.width/2)/32)
+        if m[y][x] == 20:
+            m[y][x] = 11  
     if not s and not w:
         player.vy = 0
     if not a and not d:
@@ -85,7 +103,15 @@ def get_input(player, m, ts, cs):
 
     if player.facing != oldfacing:
         player.current_frame = 0
-    
+
+def tortoise_spawn(z, sprites):
+    for t in range(5):
+        room = choice(z.rooms)
+        turtle = creatures.Sprite(randint(room.x + 4, room.x + room.w - 5)*32, randint(room.y + 4, room.y + room.h - 5)*32, "tortoise", simple_img=world.image_db["tortoise2"])
+        turtle.item = True
+        turtle.tick = creatures.tick_item
+        sprites.append(turtle)
+        
 def gen_test_map():
     game_map = [[0 for x in range(100)] for y in range(100)]
     for x in range(1000):
@@ -125,6 +151,12 @@ def dialogue_mode():
         # world.choice = ""
     # if the type is a switch, then change the current conversation partner's conv to the switch
     # if the type is a give, then return to game mode for now
+    if type(cur_dialogue) == dialobjects.C_Global:
+        world.globs[cur_dialogue.key] = cur_dialogue.value
+        world.diaindex += 1
+        world.dialogue_message = ""
+        world.choice = ""
+        print(world.globs["tortoise_spawn"])
     for event in pygame.event.get():
         if world.choice != "":
             if event.type == pygame.KEYDOWN:
@@ -162,7 +194,7 @@ def dialogue_mode():
 def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):   
     
     timers.update_timers()
-    
+    world.total_ticks += 1
     mouse_x, mouse_y = pygame.mouse.get_pos()
     
       
@@ -186,6 +218,9 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
     shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth, shield)       
     
     
+    if player.hitpoints <= 0:
+        player.alive = False
+        shield.alive = False
     
     nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
     collisions.check_collisions(nearby_sprites, sprites)
@@ -213,8 +248,8 @@ def addtorch(m,sprites,anim):
                     sprites.append(torches)
             
 
-
 def main(screen):   
+    global player
     clock = pygame.time.Clock()
     running = True
     key_timer = 0
@@ -225,7 +260,7 @@ def main(screen):
     world.image_db["dude"] = stacked_dude
     
 
-    game_map, keys, start, end = dungeongen.make_dungeon(140)
+    game_map, keys, start, end, zones = dungeongen.make_dungeon(140)
     
     
     tsimg = pygame.image.load("tile sheet.png")
@@ -281,6 +316,7 @@ def main(screen):
     py = randint(room.y + 1, room.y + room.h - 3)
     px = randint(room.x + 1, room.x + room.w - 3)
     player = creatures.Sprite(px * 32, py * 32, "player", panim)
+    player.light = True
 
     loogie_anim = { "walking": {"down": ("bloodyloodies", 20, 20, [0], 7)}}
     player.tick = creatures.tick_player
@@ -308,9 +344,6 @@ def main(screen):
     shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     
     shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
-    border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
-    
 
         
 
@@ -331,12 +364,13 @@ def main(screen):
     #dungeongen.add_shadow(game_map, sprites)
     
     spawnpoints = get_coords(game_map, filter_dict(lambda x: x.floor_tile, world.TILES.data))
-    creatures.randomspawn(player,game_map, spawnpoints)
-    for x in range(50):
+    for x in range(100):
         borgalon = creatures.Sprite(500,500, "borgalon", banim)
         creatures.randomspawn(borgalon,game_map, spawnpoints)
+        borgalon.hitpoints = 5
         borgalon.vx = 1
         borgalon.vy = 0
+        borgalon.light = True
 
         borgalon.hitpoints = 5
         borgalon.facing = "left"
@@ -350,9 +384,20 @@ def main(screen):
         creatures.randomspawn(chests,game_map, spawnpoints)
         sprites.insert(0,chests)
     
-    stranger = creatures.Sprite(player.x + 100, player.y, "stranger", simple_img=world.image_db["stranger"])
+    room = dungeongen.shrink_room(choice(start.rooms))
+    ty = randint(room.y + 1, room.y + room.h - 3)
+    tx = randint(room.x + 1, room.x + room.w - 3)
+    tortoise_merch = creatures.Sprite(tx*32, ty*32, "tortoise_collector", simple_img=world.image_db["tortoise_collector"])
+    tortoise_merch.conversation = "tortoise"
+    sprites.append(tortoise_merch)
+    
+    room = dungeongen.shrink_room(choice(start.rooms))
+    ty = randint(room.y + 1, room.y + room.h - 3)
+    tx = randint(room.x + 1, room.x + room.w - 3)
+    stranger = creatures.Sprite(tx*32, ty*32, "stranger", simple_img=world.image_db["stranger"])
     stranger.conversation = "stranger"
     sprites.append(stranger)
+    
     puke = creatures.Sprite(350, 350, "puke", puke_anim)
     
     for x in range(50):
@@ -405,9 +450,6 @@ def main(screen):
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
     
-    # Timer Example
-   # timers.add_timer(5, lambda: cam.set_shake(5))
-    #timers.add_timer(10, lambda: cam.set_shake(0))
     
     shield.width = 90
     shield.maxwidth = 90
@@ -417,15 +459,33 @@ def main(screen):
         if shield.width <= shield.maxwidth:
             shield.width+= 0.025
         key_timer += 1
+        if world.globs["tortoise_spawn"] == True:
+            tortoise_spawn(creatures.cur_zone(player, zones), sprites)
+            world.globs["tortoise_spawn"] = False
         if world.mode == "game":
             sprites, running = game_mode(timers, player, game_map, ts, sprites, shield, swidth, running)
         elif world.mode == "dialogue":
             dialogue_mode()
         else:
             assert(False)
+        
+        nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
+        collisions.check_collisions(nearby_sprites, sprites)
+
+        sprites = list(filter(lambda s: s.alive, sprites))
+            
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                part.crazy_splatter(player.x + 50, player.y + 50, (255,0,0))
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    running = False
                 
         screen.fill((0,0,0))        
-        display.draw_interface(screen, cam, ts, game_map, sprites)
+        if player.alive:
+            display.draw_interface(screen, cam, ts, game_map, sprites)
     
         if player.hitpoints <= 0:
             player.alive = False

@@ -1,4 +1,5 @@
 import pygame
+import world
 class Choice:
     def __init__(self, text, key, target):
         self.text = text
@@ -18,6 +19,11 @@ class C_Switch:
 class C_Give:
     def __init__(self, object):
         self.object = object
+
+class C_Global:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
         
         
     
@@ -30,4 +36,16 @@ conversation = {
     "tourist":[C_Text("yep. now that the dungeons are being renovated, more and more tourists are coming down here. i haven't seen many humans brave enough to visit though!")],
     "yescoat":[C_Text("thanks"), C_Give("coat"), C_Switch("coated")],
     "nocoat": [C_Text("thats sad :( could you get one?")],
-    "coated": [C_Text("Thanks for that coat you gave me earlier")]}
+    "coated": [C_Text("Thanks for that coat you gave me earlier")],
+    "tortoise":[
+        C_Text("There are five golden tortoises in this zone. If you bring me all of them, there will be a reward. Will you try?", 
+        [Choice("yes(y)", pygame.K_y, "okay"), Choice("no(n)", pygame.K_n, "bye")])],
+    "okay":[
+        C_Text("Cool"), 
+        C_Global("tortoise_spawn", True), 
+        C_Switch("tortiose2")],
+    "bye":[C_Text("bye")],
+    "tortiose2":[C_Text("Have you gotten those?",
+        [Choice("yes(y)", pygame.K_y, "awsome!"),
+        Choice("no(n)", pygame.K_n, "bye")])],
+    "awsome!":[C_Text("Yay!")]}
