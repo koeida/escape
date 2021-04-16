@@ -28,6 +28,10 @@ def hitbar(max,cur,screen):
     screen.fill((20,20,20),(35,35,max,30))
     screen.fill((0,150,30),(35,35,cur,30))
     
+def sanebar(max,cur,screen):
+    screen.fill((20,20,20),(600,300,10,max))
+    screen.fill((255,0,0),(600,300,10,cur))
+    
     
 
 def draw_tile(screen, tileset, tile_number, x, y):
@@ -91,7 +95,7 @@ def render_sprite(screen, c_left, c_top, s):
             current_tile_number = aframes[0]
         tix, tiy = get_tile_coords(ts, current_tile_number) 
         screen.blit(img, (s.x - c_left, s.y - c_top), (tix, tiy, ts.tile_width, ts.tile_height))
-        hitbox_rect = pygame.Rect(s.x + s.hitbox.x - c_left, s.y + s.hitbox.y - c_top, s.hitbox.width, s.hitbox.height)
+        #hitbox_rect = pygame.Rect(s.x + s.hitbox.x - c_left, s.y + s.hitbox.y - c_top, s.hitbox.width, s.hitbox.height)
         #pygame.gfxdraw.rectangle(screen, hitbox_rect, (255,0,0))
                 
 def render_cam_sprites(screen, cam, sprites, ts, m, light_screen):
@@ -190,10 +194,12 @@ def draw_interface(screen, cam, ts, game_map, sprites):
     dark_surface.fill((0,0,0))
     cam_surface = render_camera(cam,  ts, game_map, sprites, dark_surface)
     screen.blit(cam_surface, (cam.x, cam.y))
-    screen.blit(dark_surface, (cam.x, cam.y))
+    #screen.blit(world.image_db["darkscreen"],(cam.x,cam.y))
+    #screen.blit(dark_surface, (cam.x, cam.y))
     player = first(lambda s: s.kind == "player", sprites) 
     if player != None:
         hitbar(100, player.hitpoints,screen)
+        sanebar(200,player.sanity,screen)
     if world.mode == "dialogue":
         dialoguebox(screen, 100, 100, 200, 100, world.dialogue_message)
         if world.choice != "":
@@ -215,14 +221,14 @@ def calc_screen_coords(game_coords, camrect, cam, m, ts):
     #meh
     
     
-def render_shield(mouse_x, mouse_y, swidth):
+def render_shield(mouse_x, mouse_y, swidth, shield):
     cam_size = 32*9
     cam_pos = 50
     rel_x, rel_y = mouse_x - cam_pos - cam_size, mouse_y - cam_pos - cam_size
     #angle = math.atan2(rel_y, rel_x)
     angle = (180 / math.pi) * math.atan2(rel_y, rel_x)
     shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    sangle = 90 / 2
+    sangle = shield.width / 2
     smiddle = 50
     pygame.gfxdraw.arc(shield_surface, smiddle, smiddle, 45, 
                        int(angle - sangle), int(angle + sangle),

@@ -25,10 +25,15 @@ class C_Global:
         self.key = key
         self.value = value
         
+        
+    
+    #
 conversation = {
-    "stranger": [
-        C_Text("i'm cold. can you give me a coat?", 
-        [Choice("yes(y)", pygame.K_y, "yescoat"), Choice("no(n)", pygame.K_n, "nocoat")])],
+    "advent": [C_Text("great! i've been looking for an adventurer! i'm cold. can you give me a coat?",
+                [Choice("yes(y)", pygame.K_y, "yescoat"), Choice("no(n)", pygame.K_n, "nocoat")])],
+    "stranger":[C_Text("hello, stranger! may i inquire whether you are here as an adventurer or a tourist?", 
+                [Choice("adventurer(y)", pygame.K_y, "advent"), Choice("tourist(n)", pygame.K_n, "tourist")])],
+    "tourist":[C_Text("yep. now that the dungeons are being renovated, more and more tourists are coming down here. i haven't seen many humans brave enough to visit though!")],
     "yescoat":[C_Text("thanks"), C_Give("coat"), C_Switch("coated")],
     "nocoat": [C_Text("thats sad :( could you get one?")],
     "coated": [C_Text("Thanks for that coat you gave me earlier")],

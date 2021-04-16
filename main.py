@@ -82,7 +82,10 @@ def get_input(player, m, ts, cs):
                 world.dialogue_message = ""
                 world.diakey = c.conversation
                 world.partner = c
-        print("yo")
+                player.sanity +=2
+            elif distance(player, c) < 50 and c.kind == "chest":
+                cs.remove(c)
+
         r = player.get_rect()
         y = int((player.y + r.height/2)/32)
         x = int((player.x + r.width/2)/32)
@@ -210,19 +213,20 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
         
     shield.x = player.x - 17
     shield.y = player.y - 10
+    
     #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
-    shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
+    shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth, shield)       
+    
     
     if player.hitpoints <= 0:
         player.alive = False
         shield.alive = False
-
     
     nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
     collisions.check_collisions(nearby_sprites, sprites)
 
     sprites = list(filter(lambda s: s.alive, sprites))
-        
+                    
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
             part.crazy_splatter(player.x + 50, player.y + 50, (255,0,0))
@@ -233,13 +237,16 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
                 running = False
         
     return(sprites, running)
-
-def add1(x):
-    return x + 1
-
-def get_distance(s):
-    global player
-    return distance(s, player) < 250
+    
+def addtorch(m,sprites,anim):
+    for y in range(len(m)):
+        for x in range(len(m[0])):
+            tnum = m[y][x] 
+            torches = creatures.Sprite(x*32, y*32, "torches", anim)
+            if tnum in (1,5,6,7,8,9,17,18,19,20,21,23,24,27,28):
+               if randint(1,10) ==1:
+                    sprites.append(torches)
+            
 
 def main(screen):   
     global player
@@ -254,6 +261,7 @@ def main(screen):
     
 
     game_map, keys, start, end, zones = dungeongen.make_dungeon(140)
+    
     
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
@@ -293,9 +301,16 @@ def main(screen):
                           "up":("Skreets", 73, 91, [0,1,2,3], 5),
                           "down": ("Skreets", 73, 91, [0,1,2,3], 5)
             }}
+            
+    boss1anim = { "walking": {"left": ("boss1", 150, 276, [0,1], 5), 
+                          "right": ("boss1", 150, 276, [0,1], 5),
+                          "up":("boss1", 150, 276, [0,1], 5),
+                          "down": ("boss1", 150, 276, [0,1], 5)
+            }}
     
     
     puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
+    torch_anim = { "walking": {"down": ("torches", 20, 30, [0,1,2,1], 3)}}
 
     room = dungeongen.shrink_room(choice(start.rooms))
     py = randint(room.y + 1, room.y + room.h - 3)
@@ -309,6 +324,8 @@ def main(screen):
     #player.y = 1000
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     player.hitpoints = 100
+    player.sanity=200
+    
     
     enemy = creatures.Sprite(600, 600, "monk", panim)
     assert(start.rooms != end.rooms)
@@ -319,8 +336,6 @@ def main(screen):
     portal.tick = creatures.portal_tick
     portal.original_img = portal.simple_img
     portal.angle = 0
-
-    
     
     
     
@@ -335,6 +350,16 @@ def main(screen):
     sprites = [player, shield] + keys
     
     sprites.append(portal)
+    boss1 = creatures.Sprite(portalx*32,(portaly*32 - 300), "boss1", boss1anim)
+    boss1.hitpoints = 50
+    boss1.facing = "left"
+    boss1.mode = "cheel"
+    boss1.target = player
+    boss1.tick = None
+    sprites.append(boss1)
+    
+    for x in range(1):
+        addtorch(game_map,sprites,torch_anim)
      
     #dungeongen.add_shadow(game_map, sprites)
     
@@ -353,6 +378,11 @@ def main(screen):
         borgalon.target = player
         borgalon.tick = creatures.tick_borgalon
         sprites.append(borgalon)
+        
+    for x in range(20):
+        chests = creatures.Sprite(32,32, "chest", simple_img=world.image_db["chest"])
+        creatures.randomspawn(chests,game_map, spawnpoints)
+        sprites.insert(0,chests)
     
     room = dungeongen.shrink_room(choice(start.rooms))
     ty = randint(room.y + 1, room.y + room.h - 3)
@@ -420,8 +450,14 @@ def main(screen):
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
     
+    
+    shield.width = 90
+    shield.maxwidth = 90
+    
     while(running):
         clock.tick(60)
+        if shield.width <= shield.maxwidth:
+            shield.width+= 0.025
         key_timer += 1
         if world.globs["tortoise_spawn"] == True:
             tortoise_spawn(creatures.cur_zone(player, zones), sprites)
@@ -447,11 +483,15 @@ def main(screen):
                 if event.key == pygame.K_SPACE:
                     running = False
                 
-        screen.fill((0,0,0))    
+        screen.fill((0,0,0))        
         if player.alive:
             display.draw_interface(screen, cam, ts, game_map, sprites)
-
-        
+    
+        if player.hitpoints <= 0:
+            player.alive = False
+            shield.alive = False
+            screen.blit(world.image_db["Deathscreen"],(0,0))
+    
         pygame.display.flip()
 
         

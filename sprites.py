@@ -51,8 +51,6 @@ class Sprite:
             return self.simple_img.get_rect()
         else:
             aname, width, height, aframes, adelay = self.animations[self.current_animation][self.facing]
-            img = world.image_db[aname]
-            #ts = world.load_tileset(img, width, height)
             result = pygame.Rect(self.x, self.y, width, height)
             return result 
     def get_img(self):
