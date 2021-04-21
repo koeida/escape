@@ -106,10 +106,16 @@ def render_cam_sprites(screen, cam, sprites, ts, m, light_screen):
         sh = srect.height
         on_x = s.x >= c_left - sw and s.x < c_left + cam.width
         on_y = s.y >= c_top - sh and s.y < c_top + cam.height
+
+        light_distance = 200
+        on_x_light = s.x >= c_left - sw - light_distance and s.x < c_left + cam.width + light_distance
+        on_y_light = s.y >= c_top - sh - light_distance and s.y < c_top + cam.height + light_distance
+
         if on_x and on_y:
             render_sprite(screen, c_left, c_top, s)
-            if s.light:
-                light_screen.blit(world.image_db["light"], (s.x - c_left - 150, s.y - c_top - 150), special_flags=pygame.BLEND_RGBA_SUB)
+
+        if on_x_light and on_y_light and s.light:
+            light_screen.blit(world.image_db["light"], (s.x - c_left - 150, s.y - c_top - 150), special_flags=pygame.BLEND_RGBA_SUB)
                 
     return screen
     

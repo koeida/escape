@@ -470,11 +470,6 @@ def main(screen):
         else:
             assert(False)
         
-        nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
-        collisions.check_collisions(nearby_sprites, sprites)
-
-        sprites = list(filter(lambda s: s.alive, sprites))
-            
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 part.crazy_splatter(player.x + 50, player.y + 50, (255,0,0))
