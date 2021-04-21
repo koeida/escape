@@ -243,6 +243,7 @@ def addtorch(m,sprites,anim):
         for x in range(len(m[0])):
             tnum = m[y][x] 
             torches = creatures.Sprite(x*32, y*32, "torches", anim)
+            torches.light = True
             if tnum in (1,5,6,7,8,9,17,18,19,20,21,23,24,27,28):
                if randint(1,10) ==1:
                     sprites.append(torches)
@@ -370,7 +371,7 @@ def main(screen):
         borgalon.hitpoints = 5
         borgalon.vx = 1
         borgalon.vy = 0
-        borgalon.light = True
+        borgalon.light = False
 
         borgalon.hitpoints = 5
         borgalon.facing = "left"

@@ -195,7 +195,7 @@ def draw_interface(screen, cam, ts, game_map, sprites):
     cam_surface = render_camera(cam,  ts, game_map, sprites, dark_surface)
     screen.blit(cam_surface, (cam.x, cam.y))
     #screen.blit(world.image_db["darkscreen"],(cam.x,cam.y))
-    #screen.blit(dark_surface, (cam.x, cam.y))
+    screen.blit(dark_surface, (cam.x, cam.y))
     player = first(lambda s: s.kind == "player", sprites) 
     if player != None:
         hitbar(100, player.hitpoints,screen)

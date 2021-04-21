@@ -100,8 +100,12 @@ def load_assets():
 
     result = {}
     for fname in image_db:
-        noending = fname[:-4]
-        result[noending] = pygame.image.load(assets_dir + fname)
+        try:
+            noending = fname[:-4]
+            result[noending] = pygame.image.load(assets_dir + fname)
+        except:
+            print("%s not found!" % fname)
+            exit()
     image_db = result
 
 tsimg = pygame.image.load("tile sheet.png")
