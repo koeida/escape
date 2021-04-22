@@ -41,6 +41,7 @@ class Sprite:
         self.conversation = None
         self.can_act = True
         self.item = False
+        self.light = False
         
     def set_can_act(self):
         self.can_act = True
@@ -50,8 +51,6 @@ class Sprite:
             return self.simple_img.get_rect()
         else:
             aname, width, height, aframes, adelay = self.animations[self.current_animation][self.facing]
-            img = world.image_db[aname]
-            #ts = world.load_tileset(img, width, height)
             result = pygame.Rect(self.x, self.y, width, height)
             return result 
     def get_img(self):
