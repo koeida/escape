@@ -479,9 +479,11 @@ def main(screen):
                 if event.key == pygame.K_SPACE:
                     running = False
                 
-        screen.fill((0,0,0))        
+
+        screen.fill((0,0,0))  
+        mouse_x, mouse_y = pygame.mouse.get_pos()        
         if player.alive:
-            display.draw_interface(screen, cam, ts, game_map, sprites)
+            display.draw_interface(screen, cam, ts, game_map, sprites, mouse_x, mouse_y)
     
         if player.hitpoints <= 0:
             player.alive = False

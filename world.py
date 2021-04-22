@@ -18,6 +18,7 @@ image_db = ["BODY_male.png",
             "boganim.png",
             "puke.png",
             "i_square.png",
+            "i_square_select.png",
             "BLOOD.png",
             "VLATION.png",
             "bloodyloodies.png",
@@ -100,11 +101,11 @@ def load_assets():
 
     result = {}
     for fname in image_db:
+        noending = fname[:-4]
         try:
-            noending = fname[:-4]
             result[noending] = pygame.image.load(assets_dir + fname)
         except:
-            print("%s not found!" % fname)
+            print(assets_dir + fname)
             exit()
     image_db = result
 
