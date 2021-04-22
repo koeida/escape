@@ -89,7 +89,7 @@ def load_assets():
         try:
             result[noending] = pygame.image.load(assets_dir + fname)
         except:
-            print(fname)
+            print(assets_dir + fname)
             exit()
     image_db = result
 
