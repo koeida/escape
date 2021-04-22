@@ -240,7 +240,7 @@ def main(screen):
                 
         screen.fill((0,0,0))    
         if player.alive:
-            display.draw_interface(screen, cam, ts, game_map, sprites)
+            display.draw_interface(screen, cam, ts, game_map, sprites, mouse_x, mouse_y)
         
         pygame.display.flip()
 

@@ -69,6 +69,19 @@ def get_tile_coords(tileset, tile_number):
     tix = tile_x * tileset.tile_width
     tiy = tile_y * tileset.tile_width    
     return (tix, tiy)
+    
+def get_current_anim_image(s):
+    aname, width, height, aframes, adelay = s.animations[s.current_animation][s.facing]
+    img = world.image_db[aname]
+    ts = world.load_tileset(img, width, height)
+    try:
+        current_tile_number = aframes[s.current_frame]
+    except:
+        current_tile_number = aframes[0]
+    tix, tiy = get_tile_coords(ts, current_tile_number) 
+    part = (tix, tiy, ts.tile_width, ts.tile_height)
+    return img, part
+    
 
 def render_sprite(screen, c_left, c_top, s):
     if s.simple_img != None:
@@ -179,13 +192,49 @@ def blit_text(screen, text, x, y, size, color=(255,255,255), font_type = None):
     text = font.render(text, True, color)
     screen.blit(text, (x,y))
 
-def draw_inventory(screen, inventory):
-    for y in range(2):
-        for x in range(8):
-            screen.blit(world.image_db["i_square"], (520+x*32, 32+y*32))
+def draw_inventory(screen, inventory, mouse_x, mouse_y):
+    row_length = 8
+    row_height = 2
+    for y in range(row_height):
+        for x in range(row_length):
+            istartx = 520
+            istarty = 32
+            box_s = 32
+            diffy = mouse_y - istarty
+            diffx = mouse_x - istartx
+            hy = int(diffy/box_s)
+            hx = int(diffx/box_s)
+            if hx == x and hy == y:
+                square_img = world.image_db["i_square_select"]
+            else:
+                square_img = world.image_db["i_square"]
+            screen.blit(square_img, (istartx + x * box_s, istarty + y * box_s))
+            i_index = y * row_length + x
+            mouse_index = None
+            if len(inventory) > i_index:
+                current_item = inventory[i_index]
+                
+                if current_item.simple_img != None:
+                    img = current_item.simple_img    
+                else:
+                    img, part = get_current_anim_image(current_item)
+                box_c = box_s/2
+                srect = current_item.get_rect()
+                sprite_cx = srect.width/2
+                sprite_cy = srect.height / 2
+                cmodx = box_c - sprite_cx
+                cmody = box_c - sprite_cy
+                
+                dest = (istartx + x * box_s + cmodx, istarty + y *box_s + cmody)
+                
+                
+                if current_item.simple_img != None:
+                    screen.blit(img, dest)
+                else:                    
+                    screen.blit(img, dest, part)
 
 
-def draw_interface(screen, cam, ts, game_map, sprites):
+def draw_interface(screen, cam, ts, game_map, sprites, mouse_x, mouse_y):
     # Draw the camera
     cam_surface = render_camera(cam,  ts, game_map, sprites)
     screen.blit(cam_surface, (cam.x, cam.y))
@@ -197,7 +246,7 @@ def draw_interface(screen, cam, ts, game_map, sprites):
     screen.blit(world.image_db["coin"], (0, 510))
     blit_text(screen, player.money, 50, 512, 48)
     # TASK: Draw inventory?
-    draw_inventory(screen, player.inventory)
+    draw_inventory(screen, player.inventory, mouse_x, mouse_y)
     # TASK: Brainstorm other things that should go on the screen
     
 def calc_screen_coords(game_coords, camrect, cam, m, ts):
