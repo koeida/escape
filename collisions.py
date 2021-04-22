@@ -212,5 +212,5 @@ collision_db = {("player", "monk"): keep_separated,
                 ("skreet", "bloodyloodies"): puke_borg_hit,
                 ("player", "wall"): keep_separated,
                 ("player", "key"): get_key,
-                ("player", "coin"): get_coin}
+                ("player", "coin"): get_coin,
                 ("player", "key"): get_key}
