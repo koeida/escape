@@ -46,6 +46,9 @@ def attempt_move(s, m, ts):
     attempt_v_move2(s, 0, s.vy, m, ts)
 
 def tick_null(p, m, ts, sprites):
+  pass
+
+def tick_blood(p, m, ts, sprites):
     pass
 
 def tick_blood(p, m, ts, sprites):
@@ -96,9 +99,24 @@ def puke_hit(s1,s2, ss):
     blood = make_blood_splatter(s1.x + 15, s1.y + 25)
     s1.hitpoints -= 3
     s2.alive = False
+
     part.crazy_splatter(s2.x,s2.y,(180,0,0),randint(20,100))
     playerhurt.play()
     ss.insert(0, blood)
+    
+def wildbounce(s1,s2,sprites):
+    if s2.is_wild == False:
+        s2.x = s2.last_x
+        s2.y = s2.last_y   
+        s2.vy *= randint(-20,20)
+        s2.vx *= randint(-20,20)
+        s2.is_wild = True
+        s1.hitpoints -= 1
+        
+    
+def beglobbed(s1,s2,sprites):
+    s1.hitpoints-=1
+    
 
 def puke_borg_hit(s1,s2, ss):
     if s2.deflected_timer != 0:
@@ -115,14 +133,14 @@ def puke_borg_hit(s1,s2, ss):
         borghurt.play()
         part.crazy_splatter(s2.x,s2.y,(0,125,0),randint(20,100))
 
+
     
 def deflect(s1, s2, sprites):
-    if s2.deflected_timer == 0:
-        s2.x = s2.last_x
-        s2.y = s2.last_y    
-        s2.vy *= -1.25
-        s2.vx *= -1.25
-        s2.deflected_timer = 20
+    s2.x = s2.last_x
+    s2.y = s2.last_y    
+    s2.vy *= -20
+    s2.vx *= -20
+    s2.deflected_timer = 100
 
 def get_key(s1, s2, sprites):
     s1.inventory.append(s2)
@@ -137,6 +155,7 @@ def get_coin(s1, s2, sprites):
     s1.money += 1
     coindrop.play()
     sprites.remove(s2)
+
     
 def shrinkyrect(r, percent):
     shrunkwidth = (r.width/100) * percent
@@ -166,6 +185,10 @@ def check_collisions(nearby, sprites):
             overlap = shield_mask.overlap(s2mask, offset)
             if cpair in collision_db and overlap != None:
                 collision_db[cpair](s1, s2, sprites)
+        elif s2.item and s1.kind == "player" and hb1.colliderect(hb2):
+            s1.inventory.append(s2)
+            sprites.remove(s2)
+            
         else:
             if cpair in collision_db and hb1.colliderect(hb2):
                 collision_db[cpair](s1, s2, sprites)
@@ -173,10 +196,21 @@ def check_collisions(nearby, sprites):
 collision_db = {("player", "monk"): keep_separated,
                 ("player", "puke"): puke_hit,
                 ("borgalon", "puke"): puke_borg_hit,
+                ("player", "bloodyloodies"): puke_hit,
+                ("vlation", "bloodyloodies"): puke_borg_hit,
+                ("vlation", "puke"): puke_borg_hit,
+                ("borgalon", "bloodyloodies"): puke_borg_hit,
+                ("shield", "bloodyloodies"): deflect,
                 ("shield", "puke"): deflect,
                 ("player", "borg_fang"): get_item,
+                ("gloub", "puke"): wildbounce,
+                ("gloub", "bloodyloodies"): wildbounce,
+                ("player", "gloub"): beglobbed,
+                ("player", "skreet"): beglobbed,
                 ("shield", "borgalon"): deflect,
+                ("skreet", "puke"): puke_borg_hit,
+                ("skreet", "bloodyloodies"): puke_borg_hit,
                 ("player", "wall"): keep_separated,
                 ("player", "key"): get_key,
                 ("player", "coin"): get_coin}
-             
+                ("player", "key"): get_key}

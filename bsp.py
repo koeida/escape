@@ -84,6 +84,8 @@ def make_bsp_rooms(width, height):
     head = Node(Area(0,0,width, height,"vert"))
     split_area(head, 0)
     zones = get_branches(head, 4)
+    zone_sizes = zones
+    
     zones = list(map(get_leaves, zones))
     for x in range(len(zones)):
         zones[x] = list(map(lambda r: r.name, zones[x]))
@@ -92,7 +94,8 @@ def make_bsp_rooms(width, height):
     # rooms = list(map(lambda r: r.name, rooms))
     # #print_tree(branch)
     # print(branch)
-    return zones
+    
+    return zones, zone_sizes
 
 
 def make_zones(width, height):

@@ -1,10 +1,18 @@
 import pygame
 from collections import namedtuple
 
+
 TILE_WIDTH = 32
 TILE_HEIGHT = 32
+total_ticks = 0 
 FPS = 60
-
+mode = "game"
+dialogue_message = ""
+diakey = ""
+diaindex = 0
+choice = ""  
+partner = None
+globs = {"tortoise_spawn": False}
 image_db = ["BODY_male.png",
             "LEGS_robe_skirt.png",
             "boganim.png",
@@ -12,6 +20,11 @@ image_db = ["BODY_male.png",
             "i_square.png",
             "i_square_select.png",
             "BLOOD.png",
+            "VLATION.png",
+            "bloodyloodies.png",
+            "Gloub.png",
+            "Skreets.png",
+            "skreettung.png",
             "key.png",
             "borgalon_fang.png",
             "keyanimation.png",
@@ -19,8 +32,19 @@ image_db = ["BODY_male.png",
             "topshadow.png",
             "sideshadow.png",
             "portal.png",
-            "coin.png"]
-
+            "coin.png",
+            "dbtl.png",
+            "dbt.png",
+            "dbtr.png",
+            "dbl.png",
+            "dbr.png",
+            "dbbl.png",
+            "dbb.png",
+            "dbbr.png",
+            "stranger.png",
+            "tortoise2.png",
+            "tortoise_collector.png"]
+            
 def tile(walkable=True, floor_tile=False, matching_tile=None):
     results = TileInfo()
     results.walkable = walkable
