@@ -1,12 +1,13 @@
 from random import choice, randint
 import bsp
 import itertools
-from tools import first, two_chunk, filter_dict, map_dict
+from tools import first, two_chunk, filter_dict, map_dict, get_coords
 import pygame
 import time
 from copy import deepcopy
 from sprites import Sprite
 import world
+import creatures
 
 
 dungeon_viz = []
@@ -353,6 +354,43 @@ def trap_door_spawn(m):
             if m[y][x] == 16 and randint(1, 300) == 1:
                 m[y][x] = 20
         
+
+def trap_door_room(player):
+    sprites = []
+    m = [[3 for x in range(1000)] for y in range(1000)]
+    floor_tiles = filter_dict(lambda x: x.floor_tile, world.TILES.data)
+    room = make_room(15, 15, choice(floor_tiles), 1, 6)
+    stamp(35, 35, room, m)
+    shield, swidth = creatures.make_shield(player)
+    sprites.append(shield)
+    if randint(1, 1) == 1:
+        key_anim = { "walking": {"down": ("keyanimation", 32, 32, [0,1,2,3,4], 4)}}
+        key = Sprite(1152, 1152, "key", key_anim)
+        key.alive = True
+        key.hitpoints = 2
+        key.item = True
+        sprites.append(key)
+    
+    ladder = Sprite(1152, 1152, "ladder", simple_img=world.image_db["chest"])
+    ladder.alive = True
+    sprites.append(ladder)
+    
+    spawnpoints = get_coords(m, filter_dict(lambda x: x.floor_tile, world.TILES.data))
+    
+    for x in range(2):
+        sprites.append(creatures.make_borg(m, spawnpoints, player))
+    
+    for x in range(2):
+        sprites.append(creatures.make_vlation(m, spawnpoints, player))
+        
+    for x in range(1):
+        sprites.append(creatures.make_skreet(m, spawnpoints, player))
+    
+    
+    for x in range(1):
+        sprites.append(creatures.make_gloub(m, spawnpoints, player))
+    
+    return m, sprites, shield
     
 def add_shadow(d, sprites):
     for y in range(len(d)):

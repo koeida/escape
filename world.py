@@ -13,6 +13,8 @@ diaindex = 0
 choice = ""  
 partner = None
 globs = {"tortoise_spawn": False}
+cur_world = "main"
+worlds = {}
 image_db = ["BODY_male.png",
             "LEGS_robe_skirt.png",
             "boganim.png",
@@ -78,20 +80,26 @@ def load_tileset(tileset_img, tile_width, tile_height):
             7: tile(False, matching_tile=8),
             8: tile(False),
             9: tile(False),
+            10: tile(False),
+            11: tile(False), 
             12: tile(False),
+            13: tile(False),
+            14: tile(True),
             15: tile(True, True),
             16: tile(True, True),
+            17: tile(False),
             18: tile(False, matching_tile=19),
             19: tile(False),
-            20: tile(False, matching_tile=21),
-            21: tile(False),
-            22: tile(True, True),
-            23: tile(False, matching_tile=24),
-            24: tile(False),
-            25: tile(True, True),
+            20: tile(True),
+            21: tile(False, matching_tile=22),
+            22: tile(False),
+            23: tile(True, True),
+            24: tile(False, matching_tile=25),
+            25: tile(False),
             26: tile(True, True),
-            27: tile(False, matching_tile=28),
-            28: tile(False)}
+            27: tile(True, True),
+            28: tile(False, matching_tile=29),
+            29: tile(False)}
             
     return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows, data)
     
