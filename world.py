@@ -13,6 +13,8 @@ diaindex = 0
 choice = ""  
 partner = None
 globs = {"tortoise_spawn": False}
+cur_world = "main"
+worlds = {}
 image_db = ["BODY_male.png",
             "LEGS_robe_skirt.png",
             "boganim.png",
@@ -42,7 +44,8 @@ image_db = ["BODY_male.png",
             "dbbr.png",
             "stranger.png",
             "tortoise2.png",
-            "tortoise_collector.png"]
+            "tortoise_collector.png",
+            "chest.png"]
             
 def tile(walkable=True, floor_tile=False, matching_tile=None):
     results = TileInfo()

@@ -171,6 +171,9 @@ def shrinkyrect(r, percent):
     newheight = r.height - heightmod
     return pygame.Rect(newx, newy, newwidth, newheight)
 
+def climb_ladder(p1, p2, sprites):
+    world.cur_world = "main"
+    print("EIW")
 def check_collisions(nearby, sprites):
     scombs = combinations(nearby, 2)
     for s1, s2 in scombs:
@@ -216,4 +219,5 @@ collision_db = {("player", "monk"): keep_separated,
                 ("player", "wall"): keep_separated,
                 ("player", "key"): get_key,
                 ("player", "coin"): get_coin,
-                ("player", "key"): get_key}
+                ("player", "key"): get_key,
+                ("player", "ladder"): climb_ladder}

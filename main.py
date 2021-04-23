@@ -90,6 +90,8 @@ def get_input(player, m, ts, cs, shield):
             cs.insert(0, player)
             player.x = 40*32
             player.y = 40*32
+            world.worlds["fwfwe"] = nm, cs
+            world.cur_world = "fwfwe"
             return nm, cs, shield
     if not s and not w:
         player.vy = 0
@@ -220,6 +222,7 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
       
     game_map, sprites, shield = get_input(player, game_map, ts, sprites, shield)       
     
+    
     for s in sprites:
         creatures.tick_anim(s)
         if s.kind != "wall":
@@ -255,6 +258,7 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
                 running = False
         
     return sprites, running, game_map, shield
+    
 def main(screen):   
     clock = pygame.time.Clock()
     running = True
@@ -354,8 +358,11 @@ def main(screen):
     cam_size = 32 * 15 
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
     
+    world.worlds["main"] = (game_map, sprites)
     while(running):
         clock.tick(60)
+        game_map, sprites = world.worlds[world.cur_world]
+        last_world = world.cur_world
         key_timer += 1
         if world.globs["tortoise_spawn"] == True:
             tortoise_spawn(creatures.cur_zone(player, zones), sprites)
@@ -367,10 +374,10 @@ def main(screen):
         else:
             assert(False)
         
-        nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
-        collisions.check_collisions(nearby_sprites, sprites)
+        #nearby_sprites = list(filter(lambda s: distance(s,player) < 250, sprites))
+        #collisions.check_collisions(nearby_sprites, sprites)
 
-        sprites = list(filter(lambda s: s.alive, sprites))
+        #sprites = list(filter(lambda s: s.alive, sprites))
             
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -380,7 +387,9 @@ def main(screen):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     running = False
-                
+        if last_world == world.cur_world:
+            world.worlds[world.cur_world] = (game_map, sprites)
+        
         screen.fill((0,0,0))    
         if player.alive:
             display.draw_interface(screen, cam, ts, game_map, sprites)
