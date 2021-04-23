@@ -20,6 +20,7 @@ image_db = ["BODY_male.png",
             "boganim.png",
             "puke.png",
             "i_square.png",
+            "i_square_select.png",
             "BLOOD.png",
             "VLATION.png",
             "bloodyloodies.png",
@@ -43,9 +44,15 @@ image_db = ["BODY_male.png",
             "dbb.png",
             "dbbr.png",
             "stranger.png",
+            "boss1.png",
+            "Deathscreen.png",
+            "darkscreen.png",
+            "torches.png",
+            "chest2.png",
+            "chest.png",
             "tortoise2.png",
-            "tortoise_collector.png",
-            "chest.png"]
+            "light.png",
+            "tortoise_collector.png"]
             
 def tile(walkable=True, floor_tile=False, matching_tile=None):
     results = TileInfo()
@@ -73,11 +80,26 @@ def load_tileset(tileset_img, tile_width, tile_height):
             7: tile(False, matching_tile=8),
             8: tile(False),
             9: tile(False),
+            10: tile(False),
+            11: tile(False), 
             12: tile(False),
+            13: tile(False),
+            14: tile(True),
             15: tile(True, True),
             16: tile(True, True),
+            17: tile(False),
             18: tile(False, matching_tile=19),
-            19: tile(False)}
+            19: tile(False),
+            20: tile(True),
+            21: tile(False, matching_tile=22),
+            22: tile(False),
+            23: tile(True, True),
+            24: tile(False, matching_tile=25),
+            25: tile(False),
+            26: tile(True, True),
+            27: tile(True, True),
+            28: tile(False, matching_tile=29),
+            29: tile(False)}
             
     return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows, data)
     
@@ -88,7 +110,11 @@ def load_assets():
     result = {}
     for fname in image_db:
         noending = fname[:-4]
-        result[noending] = pygame.image.load(assets_dir + fname)
+        try:
+            result[noending] = pygame.image.load(assets_dir + fname)
+        except:
+            print(assets_dir + fname)
+            exit()
     image_db = result
 
 tsimg = pygame.image.load("tile sheet.png")

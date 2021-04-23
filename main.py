@@ -79,7 +79,10 @@ def get_input(player, m, ts, cs, shield):
                 world.dialogue_message = ""
                 world.diakey = c.conversation
                 world.partner = c
-        print("yo")
+                player.sanity +=2
+            elif distance(player, c) < 50 and c.kind == "chest":
+                cs.remove(c)
+
         r = player.get_rect()
         y = int((player.y + r.height/2)/32)
         x = int((player.x + r.width/2)/32)
@@ -236,8 +239,10 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
         
     shield.x = player.x - 17
     shield.y = player.y - 10
+    
     #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
-    shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth)       
+    shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth, shield)       
+    
     
     if player.hitpoints <= 0:
         player.alive = False
@@ -247,7 +252,7 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
     collisions.check_collisions(nearby_sprites, sprites)
 
     sprites = list(filter(lambda s: s.alive, sprites))
-        
+                    
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
             part.crazy_splatter(player.x + 50, player.y + 50, (255,0,0))
@@ -259,7 +264,20 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
         
     return sprites, running, game_map, shield
     
+    
+def addtorch(m,sprites,anim):
+    for y in range(len(m)):
+        for x in range(len(m[0])):
+            tnum = m[y][x] 
+            torches = creatures.Sprite(x*32, y*32, "torches", anim)
+            torches.light = True
+            if tnum in (1,5,6,7,8,9,18,19,21,22,24,25,28,29):
+               if randint(1,10) ==1:
+                    sprites.append(torches)
+            
+
 def main(screen):   
+    global player
     clock = pygame.time.Clock()
     running = True
     key_timer = 0
@@ -271,6 +289,7 @@ def main(screen):
     
 
     game_map, keys, start, end, zones = dungeongen.make_dungeon(140)
+    
     
     tsimg = pygame.image.load("tile sheet.png")
     tsimg.convert()
@@ -284,10 +303,46 @@ def main(screen):
                         "left": ("dude", 64, 64, range(10, 18), 2),
                         "down": ("dude", 64, 64, range(19, 27), 2),
                         "right": ("dude", 64, 64, range(28, 36), 2)}}
+                        
+    banim = { "walking": {"left": ("boganim", 105, 80, [0,1,2], 7),
+                          "right": ("boganim", 105, 80, [3,4,5], 7),
+                          #"up": ("boganim", 105, 80, [5], 7),
+                          "down": ("boganim", 105, 80, [5], 7)
+                         }}
+                         
+    vlanim = { "walking": {"left": ("VLATION", 64, 59, [0,1], 7), 
+                          "right": ("VLATION", 64, 59, [0,1], 7),
+                          "up": ("VLATION", 64, 59, [0,1], 7),
+                          "down": ("VLATION", 64, 59, [0,1], 7)
+            }}
+            
+    glanim = { "walking": {"left": ("Gloub", 61, 45, [0,1,2,3,4,5], 7), 
+                          "right": ("Gloub", 61, 45, [0,1,2,3,4,5], 7),
+                          "up": ("Gloub", 61, 45, [0,1,2,3,4,5], 7),
+                          "down": ("Gloub", 61, 45, [0,1,2,3,4,5], 7)
+            }}
+            
+    skanim = { "walking": {"left": ("Skreets", 73, 91, [0,1,2,3], 5), 
+                          "right": ("Skreets", 73, 91, [0,1,2,3], 5),
+                          "up":("Skreets", 73, 91, [0,1,2,3], 5),
+                          "down": ("Skreets", 73, 91, [0,1,2,3], 5)
+            }}
+            
+    boss1anim = { "walking": {"left": ("boss1", 150, 276, [0,1], 5), 
+                          "right": ("boss1", 150, 276, [0,1], 5),
+                          "up":("boss1", 150, 276, [0,1], 5),
+                          "down": ("boss1", 150, 276, [0,1], 5)
+            }}
+    
+    
+    puke_anim = { "walking": {"down": ("puke", 20, 20, [0], 7)}}
+    torch_anim = { "walking": {"down": ("torches", 20, 30, [0,1,2,1], 3)}}
+
     room = dungeongen.shrink_room(choice(start.rooms))
     py = randint(room.y + 1, room.y + room.h - 3)
     px = randint(room.x + 1, room.x + room.w - 3)
     player = creatures.Sprite(px * 32, py * 32, "player", panim)
+    player.light = True
 
     loogie_anim = { "walking": {"down": ("bloodyloodies", 20, 20, [0], 7)}}
     player.tick = creatures.tick_player
@@ -295,8 +350,10 @@ def main(screen):
     #player.y = 1000
     player.hitbox = pygame.Rect(24, 43, 18, 18)
     player.hitpoints = 100
-    for x in range(6):
-        player.inventory.append(creatures.Sprite(randint(room.x + 4, room.x + room.w - 5)*32, randint(room.y + 4, room.y + room.h - 5)*32, "tortoise", simple_img=world.image_db["tortoise2"]))
+
+    #for x in range(6):
+    #    player.inventory.append(creatures.Sprite(randint(room.x + 4, room.x + room.w - 5)*32, randint(room.y + 4, room.y + room.h - 5)*32, "tortoise", simple_img=world.image_db["tortoise2"]))
+    player.sanity=200
     
     enemy = creatures.Sprite(600, 600, "monk", panim)
     assert(start.rooms != end.rooms)
@@ -307,21 +364,54 @@ def main(screen):
     portal.tick = creatures.portal_tick
     portal.original_img = portal.simple_img
     portal.angle = 0
-
-    
     
     
     shield, swidth = creatures.make_shield(player)
-
-        
+    
+    #swidth = player.get_rect().width + 35
+    #smiddle = int(swidth / 2)
+    #shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    #
+    #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
 
     sprites = [player, shield] + keys
     
     sprites.append(portal)
+    boss1 = creatures.Sprite(portalx*32,(portaly*32 - 300), "boss1", boss1anim)
+    boss1.hitpoints = 50
+    boss1.facing = "left"
+    boss1.mode = "cheel"
+    boss1.target = player
+    boss1.tick = None
+    sprites.append(boss1)
+    
+    for x in range(1):
+        addtorch(game_map,sprites,torch_anim)
      
     #dungeongen.add_shadow(game_map, sprites)
     
     spawnpoints = get_coords(game_map, filter_dict(lambda x: x.floor_tile, world.TILES.data))
+
+    #for x in range(100):
+    #    borgalon = creatures.Sprite(500,500, "borgalon", banim)
+    #    creatures.randomspawn(borgalon,game_map, spawnpoints)
+    #    borgalon.hitpoints = 5
+    #    borgalon.vx = 1
+    #    borgalon.vy = 0
+    #    borgalon.light = False
+
+    #    borgalon.hitpoints = 5
+    #    borgalon.facing = "left"
+    #    borgalon.mode = "cheel"
+    #    borgalon.target = player
+    #    borgalon.tick = creatures.tick_borgalon
+    #    sprites.append(borgalon)
+        
+    for x in range(20):
+        chests = creatures.Sprite(32,32, "chest", simple_img=world.image_db["chest"])
+        creatures.randomspawn(chests,game_map, spawnpoints)
+        sprites.insert(0,chests)
+    
     room = dungeongen.shrink_room(choice(start.rooms))
     ty = randint(room.y + 1, room.y + room.h - 3)
     tx = randint(room.x + 1, room.x + room.w - 3)
@@ -359,10 +449,16 @@ def main(screen):
     cam = display.Camera(player, 32, 32, cam_size, cam_size)
     
     world.worlds["main"] = (game_map, sprites)
+    
+    shield.width = 90
+    shield.maxwidth = 90
+    
     while(running):
         clock.tick(60)
         game_map, sprites = world.worlds[world.cur_world]
         last_world = world.cur_world
+        if shield.width <= shield.maxwidth:
+            shield.width+= 0.025
         key_timer += 1
         if world.globs["tortoise_spawn"] == True:
             tortoise_spawn(creatures.cur_zone(player, zones), sprites)
@@ -387,14 +483,20 @@ def main(screen):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     running = False
+
         if last_world == world.cur_world:
             world.worlds[world.cur_world] = (game_map, sprites)
         
-        screen.fill((0,0,0))    
+        screen.fill((0,0,0))  
+        mouse_x, mouse_y = pygame.mouse.get_pos()        
         if player.alive:
-            display.draw_interface(screen, cam, ts, game_map, sprites)
-
-        
+            display.draw_interface(screen, cam, ts, game_map, sprites, mouse_x, mouse_y)
+    
+        if player.hitpoints <= 0:
+            player.alive = False
+            shield.alive = False
+            screen.blit(world.image_db["Deathscreen"],(0,0))
+    
         pygame.display.flip()
 
         

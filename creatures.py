@@ -206,6 +206,7 @@ def tick_skreet(skreet, m, ts, sprites):
             
             
     if skreet.mode =="attack":
+        skreet.target.sanity-=0.01
         skreettung = Sprite(skreet.x, skreet.y, "skreettung",simple_img=world.image_db["skreettung"])
         #sprites.append(skreettung)
     
@@ -213,6 +214,7 @@ def tick_skreet(skreet, m, ts, sprites):
         tox = skreet.target.x
         toy = skreet.target.y
         if distance(skreet,skreet.target) >=500:
+            
             skreet.mode = "chase"  
         if skreet.target.x > skreet.x:
             skreet.target.x -= 1

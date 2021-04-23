@@ -100,7 +100,6 @@ def puke_hit(s1,s2, ss):
     blood = make_blood_splatter(s1.x + 15, s1.y + 25)
     s1.hitpoints -= 3
     s2.alive = False
-
     part.crazy_splatter(s2.x,s2.y,(180,0,0),randint(20,100))
     playerhurt.play()
     ss.insert(0, blood)
@@ -125,6 +124,8 @@ def puke_borg_hit(s1,s2, ss):
         s1.hitpoints -= 1
         if s1.hitpoints == 0:
             s1.alive = False
+            part.crazy_splatter(s2.x,s2.y,(127,127,0),randint(20,100))
+
             if randint(1,5) < 5:
                 coin = make_item(s1.x+50, s1.y+32, "coin", "coin", tick_drop)
                 coin.tick = creatures.tick_item
@@ -136,14 +137,17 @@ def puke_borg_hit(s1,s2, ss):
         borghurt.play()
         part.crazy_splatter(s2.x,s2.y,(0,125,0),randint(20,100))
 
-
-    
 def deflect(s1, s2, sprites):
     s2.x = s2.last_x
     s2.y = s2.last_y    
     s2.vy *= -20
     s2.vx *= -20
     s2.deflected_timer = 100
+    if s1.width > 0:
+        s1.width -=1
+        if s1.width < 0:
+            s1.width =0
+    
 
 def get_key(s1, s2, sprites):
     s1.inventory.append(s2)

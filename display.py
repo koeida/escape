@@ -28,6 +28,10 @@ def hitbar(max,cur,screen):
     screen.fill((20,20,20),(35,35,max,30))
     screen.fill((0,150,30),(35,35,cur,30))
     
+def sanebar(max,cur,screen):
+    screen.fill((20,20,20),(600,300,10,max))
+    screen.fill((255,0,0),(600,300,10,cur))
+    
     
 
 def draw_tile(screen, tileset, tile_number, x, y):
@@ -66,6 +70,19 @@ def get_tile_coords(tileset, tile_number):
     tix = tile_x * tileset.tile_width
     tiy = tile_y * tileset.tile_width    
     return (tix, tiy)
+    
+def get_current_anim_image(s):
+    aname, width, height, aframes, adelay = s.animations[s.current_animation][s.facing]
+    img = world.image_db[aname]
+    ts = world.load_tileset(img, width, height)
+    try:
+        current_tile_number = aframes[s.current_frame]
+    except:
+        current_tile_number = aframes[0]
+    tix, tiy = get_tile_coords(ts, current_tile_number) 
+    part = (tix, tiy, ts.tile_width, ts.tile_height)
+    return img, part
+    
 
 def render_sprite(screen, c_left, c_top, s):
     if s.simple_img != None:
@@ -91,10 +108,10 @@ def render_sprite(screen, c_left, c_top, s):
             current_tile_number = aframes[0]
         tix, tiy = get_tile_coords(ts, current_tile_number) 
         screen.blit(img, (s.x - c_left, s.y - c_top), (tix, tiy, ts.tile_width, ts.tile_height))
-        hitbox_rect = pygame.Rect(s.x + s.hitbox.x - c_left, s.y + s.hitbox.y - c_top, s.hitbox.width, s.hitbox.height)
+        #hitbox_rect = pygame.Rect(s.x + s.hitbox.x - c_left, s.y + s.hitbox.y - c_top, s.hitbox.width, s.hitbox.height)
         #pygame.gfxdraw.rectangle(screen, hitbox_rect, (255,0,0))
                 
-def render_cam_sprites(screen, cam, sprites, ts, m):
+def render_cam_sprites(screen, cam, sprites, ts, m, light_screen):
     c_left, c_top = get_camera_game_coords(cam, m, ts)
     for s in sprites:
         srect = s.get_rect()
@@ -102,8 +119,16 @@ def render_cam_sprites(screen, cam, sprites, ts, m):
         sh = srect.height
         on_x = s.x >= c_left - sw and s.x < c_left + cam.width
         on_y = s.y >= c_top - sh and s.y < c_top + cam.height
+
+        light_distance = 200
+        on_x_light = s.x >= c_left - sw - light_distance and s.x < c_left + cam.width + light_distance
+        on_y_light = s.y >= c_top - sh - light_distance and s.y < c_top + cam.height + light_distance
+
         if on_x and on_y:
             render_sprite(screen, c_left, c_top, s)
+
+        if on_x_light and on_y_light and s.light:
+            light_screen.blit(world.image_db["light"], (s.x - c_left - 150, s.y - c_top - 150), special_flags=pygame.BLEND_RGBA_SUB)
                 
     return screen
     
@@ -160,9 +185,9 @@ def render_camera_tiles(camera, ts, m):
     
     return clip_tiles(result, c_left, c_top, ts, camera)
 
-def render_camera(camera, ts, m, sprites):
+def render_camera(camera, ts, m, sprites, light_screen):
     result = render_camera_tiles(camera, ts, m)
-    result = render_cam_sprites(result, camera, sprites, ts, m)
+    result = render_cam_sprites(result, camera, sprites, ts, m, light_screen)
     result = render_cam_particles(result, camera, ts, m,sprites)
     return result
     
@@ -176,19 +201,60 @@ def blit_text(screen, text, x, y, size, color=(255,255,255), font_type = None):
     text = font.render(text, True, color)
     screen.blit(text, (x,y))
 
-def draw_inventory(screen, inventory):
-    for y in range(2):
-        for x in range(8):
-            screen.blit(world.image_db["i_square"], (520+x*32, 32+y*32))
+def draw_inventory(screen, inventory, mouse_x, mouse_y):
+    row_length = 8
+    row_height = 2
+    for y in range(row_height):
+        for x in range(row_length):
+            istartx = 520
+            istarty = 32
+            box_s = 32
+            diffy = mouse_y - istarty
+            diffx = mouse_x - istartx
+            hy = int(diffy/box_s)
+            hx = int(diffx/box_s)
+            if hx == x and hy == y:
+                square_img = world.image_db["i_square_select"]
+            else:
+                square_img = world.image_db["i_square"]
+            screen.blit(square_img, (istartx + x * box_s, istarty + y * box_s))
+            i_index = y * row_length + x
+            mouse_index = None
+            if len(inventory) > i_index:
+                current_item = inventory[i_index]
+                
+                if current_item.simple_img != None:
+                    img = current_item.simple_img    
+                else:
+                    img, part = get_current_anim_image(current_item)
+                box_c = box_s/2
+                srect = current_item.get_rect()
+                sprite_cx = srect.width/2
+                sprite_cy = srect.height / 2
+                cmodx = box_c - sprite_cx
+                cmody = box_c - sprite_cy
+                
+                dest = (istartx + x * box_s + cmodx, istarty + y *box_s + cmody)
+                
+                
+                if current_item.simple_img != None:
+                    screen.blit(img, dest)
+                else:                    
+                    screen.blit(img, dest, part)
 
 
-def draw_interface(screen, cam, ts, game_map, sprites):
+def draw_interface(screen, cam, ts, game_map, sprites, mouse_x, mouse_y):
     # Draw the camera
-    cam_surface = render_camera(cam,  ts, game_map, sprites)
+    dark_surface = pygame.Surface((cam.width, cam.height), pygame.SRCALPHA)
+    dark_surface.fill((0,0,0))
+    cam_surface = render_camera(cam,  ts, game_map, sprites, dark_surface)
     screen.blit(cam_surface, (cam.x, cam.y))
+    #screen.blit(world.image_db["darkscreen"],(cam.x,cam.y))
+    screen.blit(dark_surface, (cam.x, cam.y))
     player = first(lambda s: s.kind == "player", sprites) 
     if player != None:
         hitbar(100, player.hitpoints,screen)
+        sanebar(200,player.sanity,screen)
     if world.mode == "dialogue":
         dialoguebox(screen, 100, 100, 200, 100, world.dialogue_message)
         if world.choice != "":
@@ -198,7 +264,7 @@ def draw_interface(screen, cam, ts, game_map, sprites):
     screen.blit(world.image_db["coin"], (0, 510))
     blit_text(screen, player.money, 50, 512, 48)
     # TASK: Draw inventory?
-    draw_inventory(screen, player.inventory)
+    draw_inventory(screen, player.inventory, mouse_x, mouse_y)
     # TASK: Brainstorm other things that should go on the screen
     
 def calc_screen_coords(game_coords, camrect, cam, m, ts):
@@ -210,14 +276,14 @@ def calc_screen_coords(game_coords, camrect, cam, m, ts):
     #meh
     
     
-def render_shield(mouse_x, mouse_y, swidth):
+def render_shield(mouse_x, mouse_y, swidth, shield):
     cam_size = 32*9
     cam_pos = 50
     rel_x, rel_y = mouse_x - cam_pos - cam_size, mouse_y - cam_pos - cam_size
     #angle = math.atan2(rel_y, rel_x)
     angle = (180 / math.pi) * math.atan2(rel_y, rel_x)
     shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    sangle = 90 / 2
+    sangle = shield.width / 2
     smiddle = 50
     pygame.gfxdraw.arc(shield_surface, smiddle, smiddle, 45, 
                        int(angle - sangle), int(angle + sangle),
