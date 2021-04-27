@@ -81,7 +81,7 @@ def load_tileset(tileset_img, tile_width, tile_height):
             8: tile(False),
             9: tile(False),
             10: tile(False),
-            11: tile(False), 
+            11: tile(True), 
             12: tile(False),
             13: tile(False),
             14: tile(True),
@@ -99,7 +99,11 @@ def load_tileset(tileset_img, tile_width, tile_height):
             26: tile(True, True),
             27: tile(True, True),
             28: tile(False, matching_tile=29),
-            29: tile(False)}
+            29: tile(False),
+            30: tile(False, matching_tile=31),
+            31: tile(False),
+            32: tile(True),
+            33: tile(True, True)}
             
     return Tileset(tileset_img, tile_width, tile_height, tiles_per_line, rows, data)
     

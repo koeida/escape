@@ -371,7 +371,8 @@ def trap_door_room(player):
         sprites.append(key)
     
     ladder = Sprite(1152, 1152, "ladder", simple_img=world.image_db["chest"])
-    ladder.alive = True
+    ladder.topx = player.x
+    ladder.topy = player.y
     sprites.append(ladder)
     
     spawnpoints = get_coords(m, filter_dict(lambda x: x.floor_tile, world.TILES.data))
