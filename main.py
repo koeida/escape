@@ -41,7 +41,7 @@ def get_input(player, m, ts, cs, shield):
     if keys[pygame.K_t]:
         for y in range(len(m)):
             for x in range(len(m[0])):
-                if m[y][x] == 20:
+                if m[y][x] == 32:
                     player.x = x*32
                     player.y = y*32
         
@@ -88,14 +88,14 @@ def get_input(player, m, ts, cs, shield):
         x = int((player.x + r.width/2)/32)
         if m[y][x] == 20:
             m[y][x] = 11  
-            dooropen.play()
-            nm, cs, shield = dungeongen.trap_door_room(player)
-            cs.insert(0, player)
-            player.x = 40*32
-            player.y = 40*32
-            world.worlds["fwfwe"] = nm, cs
-            world.cur_world = "fwfwe"
-            return nm, cs, shield
+            # dooropen.play()
+            # nm, cs, shield = dungeongen.trap_door_room(player)
+            # cs.insert(0, player)
+            # player.x = 40*32
+            # player.y = 40*32
+            # world.worlds["fwfwe"] = nm, cs
+            # world.cur_world = "fwfwe"
+            # return nm, cs, shield
     if not s and not w:
         player.vy = 0
     if not a and not d:

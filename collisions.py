@@ -6,12 +6,15 @@ from sprites import Sprite
 import gamemap
 import world
 import creatures
+import dungeongen
 
 pygame.mixer.init()
 coindrop = pygame.mixer.Sound("coin-drop-4.wav")
 keypickup = pygame.mixer.Sound("key_pickup.wav")
 playerhurt = pygame.mixer.Sound("player-hurt.wav")
 borghurt = pygame.mixer.Sound("borg-hurt.wav")
+dooropen = pygame.mixer.Sound("door-open.wav")
+dooropen.set_volume(0.3)
 keypickup.set_volume(0.25)
 playerhurt.set_volume(0.25)
         
@@ -35,7 +38,10 @@ def attempt_v_move2(s, vx, vy,  m, ts):
     for tx, ty in coords:
         if not gamemap.walkable(tx, ty, m, ts):
             collision = True  
-
+        num = m[ty][tx]
+        if (num, s.kind) in tilecol:
+            f = tilecol_db[(num, s.kind)]
+            f(s, m)
     if collision:
         s.x = s.last_x
         s.y = s.last_y
@@ -177,7 +183,20 @@ def shrinkyrect(r, percent):
 
 def climb_ladder(p1, p2, sprites):
     world.cur_world = "main"
-    print("EIW")
+    p1.x = p2.topx
+    p1.y = p2.topy
+    
+def gointrap(s, m):
+    dooropen.play()
+    nm, cs, shield = dungeongen.trap_door_room(s)
+    cs.insert(0, s)
+    s.x = 40*32
+    s.y = 40*32
+    world.worlds["fwfwe"] = nm, cs
+    world.cur_world = "fwfwe"
+    print("Hey")
+    return shield
+    
 def check_collisions(nearby, sprites):
     scombs = combinations(nearby, 2)
     for s1, s2 in scombs:
@@ -225,3 +244,5 @@ collision_db = {("player", "monk"): keep_separated,
                 ("player", "coin"): get_coin,
                 ("player", "key"): get_key,
                 ("player", "ladder"): climb_ladder}
+                
+tilecol_db = {(11, "player"): gointrap}

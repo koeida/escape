@@ -304,7 +304,10 @@ def attempt_v_move(s, vx, vy,  m, ts):
     for tx, ty in coords:
         if not walkable(tx, ty, m, ts):
             collision = True  
-
+        num = m[ty][tx]
+        if (num, s.kind) in collisions.tilecol_db:
+            f = collisions.tilecol_db[(num, s.kind)]
+            f(s, m)
     if collision:
         s.x = s.last_x
         s.y = s.last_y
