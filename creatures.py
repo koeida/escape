@@ -316,16 +316,6 @@ def attempt_walk(s, m, ts):
     attempt_v_move(s, 0, s.vy, m, ts)
     
 
-def make_shield():
-    #swidth = player.get_rect().width + 100 #35
-    #smiddle = int(swidth / 2)
-    #shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    
-    #shield = creatures.Sprite(400, 400, "shield", simple_img=shield_surface) 
-    #border_surf = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
-    #pygame.draw.rect(border_surf, (255,0,0), (0,0,32,32), 1)
-    pass
-
 def tick_shield():
     #shield.x = player.x - 65
     #shield.y = player.y - 65
@@ -409,5 +399,7 @@ def make_shield(player):
     shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
     
     shield = Sprite(400, 400, "shield", simple_img=shield_surface) 
+    shield.width = swidth
+    shield.maxwidth = swidth
     
     return shield, swidth
