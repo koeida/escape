@@ -42,6 +42,7 @@ class Sprite:
         self.can_act = True
         self.item = False
         self.light = False
+        self.shield = None
         
     def set_can_act(self):
         self.can_act = True

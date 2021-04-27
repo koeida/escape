@@ -401,5 +401,6 @@ def make_shield(player):
     shield = Sprite(400, 400, "shield", simple_img=shield_surface) 
     shield.width = swidth
     shield.maxwidth = swidth
+    shield.surface_width = swidth
     
-    return shield, swidth
+    return shield
