@@ -188,14 +188,13 @@ def climb_ladder(p1, p2, sprites):
     
 def gointrap(s, m):
     dooropen.play()
-    nm, cs, shield = dungeongen.trap_door_room(s)
+    nm, cs = dungeongen.trap_door_room(s)
     cs.insert(0, s)
     s.x = 40*32
     s.y = 40*32
     world.worlds["fwfwe"] = nm, cs
     world.cur_world = "fwfwe"
     print("Hey")
-    return shield
     
 def check_collisions(nearby, sprites):
     scombs = combinations(nearby, 2)
