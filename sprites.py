@@ -45,6 +45,7 @@ class Sprite:
         self.topx = None
         self.topy = None
         self.sheild = None
+
         
     def set_can_act(self):
         self.can_act = True

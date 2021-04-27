@@ -276,13 +276,13 @@ def calc_screen_coords(game_coords, camrect, cam, m, ts):
     #meh
     
     
-def render_shield(mouse_x, mouse_y, swidth, shield):
+def render_shield(mouse_x, mouse_y, shield):
     cam_size = 32*9
     cam_pos = 50
     rel_x, rel_y = mouse_x - cam_pos - cam_size, mouse_y - cam_pos - cam_size
     #angle = math.atan2(rel_y, rel_x)
     angle = (180 / math.pi) * math.atan2(rel_y, rel_x)
-    shield_surface = pygame.Surface((swidth, swidth), pygame.SRCALPHA)
+    shield_surface = pygame.Surface((shield.surface_width, shield.surface_width), pygame.SRCALPHA)
     sangle = shield.width / 2
     smiddle = 50
     pygame.gfxdraw.arc(shield_surface, smiddle, smiddle, 45, 

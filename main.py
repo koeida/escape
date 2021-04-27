@@ -21,7 +21,14 @@ dooropen.set_volume(0.3)
 
 import dialobjects
 
-def get_input(player, m, ts, cs, shield):
+def jump_to_tile(s, tile, m):
+    tile_coords = filter2d(lambda t: t == 20, m)
+    if tile_coords != None:
+        s.x = x*32 - 16
+        s.y = y*32 - 16
+    
+
+def get_input(player, m, ts, cs):
     keys = pygame.key.get_pressed()
     nm = m
     speed = 4
@@ -41,9 +48,9 @@ def get_input(player, m, ts, cs, shield):
     if keys[pygame.K_t]:
         for y in range(len(m)):
             for x in range(len(m[0])):
-                if m[y][x] == 32:
-                    player.x = x*32
-                    player.y = y*32
+                if m[y][x] == 20:
+                    player.x = x*32 - 16
+                    player.y = y*32 - 16
         
     if w:   
         player.vy = -speed
@@ -88,14 +95,14 @@ def get_input(player, m, ts, cs, shield):
         x = int((player.x + r.width/2)/32)
         if m[y][x] == 20:
             m[y][x] = 11  
-            # dooropen.play()
-            # nm, cs, shield = dungeongen.trap_door_room(player)
-            # cs.insert(0, player)
-            # player.x = 40*32
-            # player.y = 40*32
-            # world.worlds["fwfwe"] = nm, cs
-            # world.cur_world = "fwfwe"
-            # return nm, cs, shield
+            dooropen.play()
+            nm, cs = dungeongen.trap_door_room(player)
+            cs.insert(0, player)
+            player.x = 40*32
+            player.y = 40*32
+            world.worlds["fwfwe"] = nm, cs
+            world.cur_world = "fwfwe"
+            return nm, cs
     if not s and not w:
         player.vy = 0
     if not a and not d:
@@ -109,7 +116,7 @@ def get_input(player, m, ts, cs, shield):
     if player.facing != oldfacing:
         player.current_frame = 0
         
-    return nm, cs, shield
+    return nm, cs
     
 def tortoise_spawn(z, sprites):
     for t in range(5):
@@ -216,14 +223,13 @@ def dialogue_mode(player):
                         else:# switch into choice mode(?) and display choices
                             world.mode = "game"
                         
-def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):   
-    
+def game_mode(timers, player, game_map, ts, sprites, running):   
     timers.update_timers()
     world.total_ticks += 1
     mouse_x, mouse_y = pygame.mouse.get_pos()
     
       
-    game_map, sprites, shield = get_input(player, game_map, ts, sprites, shield)       
+    game_map, sprites = get_input(player, game_map, ts, sprites)       
     
     
     for s in sprites:
@@ -237,11 +243,11 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
         if p.lifespan <= 0:
             part.particles.remove(p)
         
-    shield.x = player.x - 17
-    shield.y = player.y - 10
+    player.shield.x = player.x - 17
+    player.shield.y = player.y - 10
     
     #player_sx, player_sy = display.calc_screen_coords(coords, camrect)
-    shield.simple_img = display.render_shield(mouse_x, mouse_y, swidth, shield)       
+    player.shield.simple_img = display.render_shield(mouse_x, mouse_y, player.shield)       
     
     
     if player.hitpoints <= 0:
@@ -262,7 +268,7 @@ def game_mode(timers, player, game_map, ts, sprites, shield, swidth, running):
             if event.key == pygame.K_SPACE:
                 running = False
         
-    return sprites, running, game_map, shield
+    return sprites, running, game_map
     
     
 def addtorch(m,sprites,anim):
@@ -366,7 +372,8 @@ def main(screen):
     portal.angle = 0
     
     
-    shield, swidth = creatures.make_shield(player)
+    shield = creatures.make_shield(player)
+    player.shield = shield
     
     #swidth = player.get_rect().width + 35
     #smiddle = int(swidth / 2)
@@ -464,7 +471,7 @@ def main(screen):
             tortoise_spawn(creatures.cur_zone(player, zones), sprites)
             world.globs["tortoise_spawn"] = False
         if world.mode == "game":
-            sprites, running, game_map, shield = game_mode(timers, player, game_map, ts, sprites, shield, swidth, running)
+            sprites, running, game_map = game_mode(timers, player, game_map, ts, sprites, running)
         elif world.mode == "dialogue":
             dialogue_mode(player)
         else:

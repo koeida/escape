@@ -361,8 +361,7 @@ def trap_door_room(player):
     floor_tiles = filter_dict(lambda x: x.floor_tile, world.TILES.data)
     room = make_room(15, 15, choice(floor_tiles), 1, 6)
     stamp(35, 35, room, m)
-    shield, swidth = creatures.make_shield(player)
-    sprites.append(shield)
+    sprites.append(player.shield)
     if randint(1, 1) == 1:
         key_anim = { "walking": {"down": ("keyanimation", 32, 32, [0,1,2,3,4], 4)}}
         key = Sprite(1152, 1152, "key", key_anim)
@@ -391,7 +390,7 @@ def trap_door_room(player):
     for x in range(1):
         sprites.append(creatures.make_gloub(m, spawnpoints, player))
     
-    return m, sprites, shield
+    return m, sprites
     
 def add_shadow(d, sprites):
     for y in range(len(d)):
